@@ -1,0 +1,1 @@
+"""Tests for create-claude-app package."""
