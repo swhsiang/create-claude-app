@@ -61,6 +61,12 @@ The tool will prompt users to select components with **single choice per categor
 - ( ) npx  
 - ( ) yarn
 
+### GitHub Actions CI/CD
+- Prompt: "Would you like to include GitHub Actions workflows? (Y/n)"
+- Default: Yes
+- Generates CI/CD workflow files based on selected technology stack
+- Provides comprehensive workflow templates for testing, building, and deployment
+
 ## Project Structure
 
 ### Root Level Structure
@@ -73,6 +79,8 @@ The tool will prompt users to select components with **single choice per categor
 ├── package.json           # (optional) For root-level npm scripts, workspaces
 ├── requirements.txt       # Project Python dependencies
 ├── docker-compose.yml     # (if database selected)
+├── .github/               # (if GitHub Actions selected)
+│   └── workflows/         # CI/CD workflow files
 ├── frontend/              # (if frontend selected)
 ├── backend/               # (if backend selected)
 └── migrations/            # (if database + Atlas selected)
@@ -122,6 +130,16 @@ migrations/
 └── migrations/            # Migration files (if Atlas selected)
 ```
 
+### GitHub Actions Structure
+```
+.github/
+├── workflows/
+│   ├── ci.yml             # Continuous Integration workflow
+│   ├── cd.yml             # Continuous Deployment workflow (optional)
+│   └── test.yml           # Test workflow (if separate from CI)
+└── CLAUDE.md              # GitHub Actions documentation
+```
+
 ## CLAUDE.md Content Structure
 
 ### Root CLAUDE.md
@@ -136,6 +154,11 @@ migrations/
   - Development server commands
   - Build commands
   - Test commands
+- **CI/CD Pipeline Documentation** (if GitHub Actions selected)
+  - Workflow overview
+  - Deployment process
+  - Environment-specific configurations
+  - Secrets management
 - **Google Coding Style Guide Reference**
 - **Project Architecture Overview**
 - **Contributing Guidelines**
