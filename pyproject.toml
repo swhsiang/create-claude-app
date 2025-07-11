@@ -9,7 +9,7 @@ description = "Interactive Python CLI tool that scaffolds new projects optimized
 readme = "README.md"
 license = {file = "LICENSE"}
 authors = [
-    {name = "create-claude-app", email = "noreply@example.com"}
+    {name = "Wen-Hsiang Shih", email = "swh@hsiang.io"}
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
