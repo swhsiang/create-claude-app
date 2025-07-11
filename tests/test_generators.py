@@ -19,6 +19,16 @@ from create_claude_app.generators import (
     generate_readme,
     TemplateGenerator,
     TemplateError,
+    # Docker infrastructure functions
+    generate_docker_infrastructure,
+    generate_frontend_dockerfile,
+    generate_backend_dockerfile,
+    generate_database_dockerfile,
+    generate_docker_compose_environments,
+    generate_docker_compose_dev,
+    generate_docker_compose_prod,
+    generate_readme_with_docker,
+    generate_docker_optimization_docs,
 )
 from create_claude_app.prompts import ProjectConfiguration
 
@@ -627,3 +637,287 @@ class TestTemplateGenerator:
         assert 'Database:' not in content
         assert 'pip install' not in content
         assert 'backend/' not in content
+
+
+class TestDockerInfrastructureGeneration:
+    """Test Docker infrastructure generation functionality."""
+
+    def test_generate_docker_infrastructure_folder_structure(self):
+        """Test generating Docker infrastructure folder structure."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            config = ProjectConfiguration(
+                project_name='docker-app',
+                frontend='react',
+                backend='python',
+                database='postgresql',
+                build_tool='vite'
+            )
+            
+            project_path = Path(temp_dir) / 'docker-app'
+            project_path.mkdir()
+            
+            files_created = generate_docker_infrastructure(project_path, config)
+            
+            # Check that infra/docker directory structure was created
+            infra_path = project_path / 'infra' / 'docker'
+            assert infra_path.exists()
+            assert (infra_path / 'frontend').exists()
+            assert (infra_path / 'backend').exists()
+            assert (infra_path / 'database').exists()
+            
+            # Check that files were created
+            assert len(files_created) > 0
+            assert any('infra/docker' in f for f in files_created)
+
+    def test_generate_frontend_dockerfile_vite(self):
+        """Test generating frontend Dockerfile for Vite build tool."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            config = ProjectConfiguration(
+                project_name='vite-app',
+                frontend='react',
+                build_tool='vite',
+                package_manager='npm'
+            )
+            
+            project_path = Path(temp_dir) / 'vite-app'
+            project_path.mkdir()
+            
+            content = generate_frontend_dockerfile(config)
+            
+            # Check Vite-specific content
+            assert 'FROM node:18-alpine' in content
+            assert 'npm install' in content
+            assert 'npm run build' in content
+            assert 'nginx:alpine' in content
+            assert 'COPY --from=builder /app/dist /usr/share/nginx/html' in content
+
+    def test_generate_frontend_dockerfile_webpack(self):
+        """Test generating frontend Dockerfile for Webpack build tool."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            config = ProjectConfiguration(
+                project_name='webpack-app',
+                frontend='react',
+                build_tool='webpack',
+                package_manager='yarn'
+            )
+            
+            project_path = Path(temp_dir) / 'webpack-app'
+            project_path.mkdir()
+            
+            content = generate_frontend_dockerfile(config)
+            
+            # Check Webpack-specific content
+            assert 'FROM node:18-alpine' in content
+            assert 'yarn install' in content
+            assert 'yarn run build' in content
+            assert 'nginx:alpine' in content
+            assert 'COPY --from=builder /app/build /usr/share/nginx/html' in content
+
+    def test_generate_backend_dockerfile_python(self):
+        """Test generating backend Dockerfile for Python."""
+        config = ProjectConfiguration(
+            project_name='python-app',
+            backend='python',
+            database='postgresql'
+        )
+        
+        content = generate_backend_dockerfile(config)
+        
+        # Check Python-specific content
+        assert 'FROM python:3.11-slim' in content
+        assert 'pip install --no-cache-dir -r requirements.txt' in content
+        assert 'uvicorn' in content and 'app.main:app' in content
+        assert 'EXPOSE 8000' in content
+
+    def test_generate_backend_dockerfile_nodejs(self):
+        """Test generating backend Dockerfile for Node.js."""
+        config = ProjectConfiguration(
+            project_name='node-app',
+            backend='nodejs',
+            package_manager='npm'
+        )
+        
+        content = generate_backend_dockerfile(config)
+        
+        # Check Node.js-specific content
+        assert 'FROM node:18-alpine' in content
+        assert 'npm install --production' in content
+        assert 'npm' in content and 'start' in content
+        assert 'EXPOSE 3000' in content
+
+    def test_generate_database_dockerfile_postgresql(self):
+        """Test generating database Dockerfile for PostgreSQL."""
+        config = ProjectConfiguration(
+            project_name='pg-app',
+            database='postgresql'
+        )
+        
+        content = generate_database_dockerfile(config)
+        
+        # Check PostgreSQL-specific content
+        assert 'FROM postgres:15-alpine' in content
+        assert 'POSTGRES_DB=' in content
+        assert 'POSTGRES_USER=' in content
+        assert 'POSTGRES_PASSWORD=' in content
+        assert 'EXPOSE 5432' in content
+
+    def test_generate_database_dockerfile_mysql(self):
+        """Test generating database Dockerfile for MySQL."""
+        config = ProjectConfiguration(
+            project_name='mysql-app',
+            database='mysql'
+        )
+        
+        content = generate_database_dockerfile(config)
+        
+        # Check MySQL-specific content
+        assert 'FROM mysql:8.0' in content
+        assert 'MYSQL_DATABASE=' in content
+        assert 'MYSQL_USER=' in content
+        assert 'MYSQL_PASSWORD=' in content
+        assert 'EXPOSE 3306' in content
+
+    def test_generate_docker_compose_environments(self):
+        """Test generating environment-specific docker-compose files."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            config = ProjectConfiguration(
+                project_name='multi-env-app',
+                frontend='react',
+                backend='python',
+                database='postgresql',
+                build_tool='vite'
+            )
+            
+            project_path = Path(temp_dir) / 'multi-env-app'
+            project_path.mkdir()
+            
+            files_created = generate_docker_compose_environments(project_path, config)
+            
+            # Check that environment-specific files were created
+            assert len(files_created) == 4  # main, dev, staging, prod
+            assert any('docker-compose.yml' in f for f in files_created)
+            assert any('docker-compose.dev.yml' in f for f in files_created)
+            assert any('docker-compose.staging.yml' in f for f in files_created)
+            assert any('docker-compose.prod.yml' in f for f in files_created)
+            
+            # Check file contents
+            main_compose = (project_path / 'docker-compose.yml').read_text()
+            assert 'version: ' in main_compose
+            assert 'services:' in main_compose
+            assert 'frontend:' in main_compose
+            assert 'backend:' in main_compose
+            assert 'database:' in main_compose
+
+    def test_generate_docker_compose_dev_environment(self):
+        """Test generating development docker-compose file."""
+        config = ProjectConfiguration(
+            project_name='dev-app',
+            frontend='vue',
+            backend='python',
+            database='postgresql',
+            build_tool='vite'
+        )
+        
+        content = generate_docker_compose_dev(config)
+        
+        # Check development-specific content
+        assert 'version: ' in content
+        assert 'services:' in content
+        assert 'volumes:' in content  # Dev should have volume mounts
+        assert 'ports:' in content
+        assert 'environment:' in content
+        assert 'NODE_ENV=development' in content or 'ENVIRONMENT=development' in content
+
+    def test_generate_docker_compose_prod_environment(self):
+        """Test generating production docker-compose file."""
+        config = ProjectConfiguration(
+            project_name='prod-app',
+            frontend='react',
+            backend='python',
+            database='postgresql',
+            build_tool='vite'
+        )
+        
+        content = generate_docker_compose_prod(config)
+        
+        # Check production-specific content
+        assert 'version: ' in content
+        assert 'services:' in content
+        assert 'restart: unless-stopped' in content
+        assert 'NODE_ENV=production' in content or 'ENVIRONMENT=production' in content
+
+    def test_generate_readme_with_docker_commands(self):
+        """Test generating README with Docker commands section."""
+        config = ProjectConfiguration(
+            project_name='docker-readme-app',
+            frontend='react',
+            backend='python',
+            database='postgresql',
+            build_tool='vite'
+        )
+        
+        content = generate_readme_with_docker(config)
+        
+        # Check Docker commands section
+        assert '## Docker Commands' in content
+        assert 'docker-compose up -d' in content
+        assert 'docker-compose -f docker-compose.dev.yml up' in content
+        assert 'docker-compose -f docker-compose.prod.yml up -d' in content
+        assert 'docker-compose down' in content
+        assert 'logs -f' in content
+        assert 'exec' in content
+
+    def test_generate_docker_optimization_docs(self):
+        """Test generating Docker optimization documentation."""
+        config = ProjectConfiguration(
+            project_name='optimized-app',
+            backend='python',
+            database='postgresql'
+        )
+        
+        content = generate_docker_optimization_docs(config)
+        
+        # Check optimization documentation
+        assert 'Docker Optimization' in content
+        assert 'Multi-stage Builds' in content
+        assert 'Layer Caching' in content
+        assert 'Production Considerations' in content
+        assert 'Security' in content
+
+    def test_generate_project_with_docker_infrastructure(self):
+        """Test generating complete project with Docker infrastructure."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            config = ProjectConfiguration(
+                project_name='full-docker-app',
+                frontend='react',
+                backend='python',
+                database='postgresql',
+                build_tool='vite',
+                ui_framework='tailwind',
+                package_manager='npm'
+            )
+            
+            project_path = Path(temp_dir) / 'full-docker-app'
+            result = generate_project(str(project_path), config)
+            
+            # Check that project was created
+            assert project_path.exists()
+            assert result['success'] is True
+            
+            # Check Docker infrastructure was created
+            infra_path = project_path / 'infra' / 'docker'
+            assert infra_path.exists()
+            assert (infra_path / 'frontend' / 'Dockerfile').exists()
+            assert (infra_path / 'backend' / 'Dockerfile').exists()
+            assert (infra_path / 'database' / 'Dockerfile').exists()
+            
+            # Check environment-specific docker-compose files
+            assert (project_path / 'docker-compose.yml').exists()
+            assert (project_path / 'docker-compose.dev.yml').exists()
+            assert (project_path / 'docker-compose.staging.yml').exists()
+            assert (project_path / 'docker-compose.prod.yml').exists()
+            
+            # Check README includes Docker commands
+            readme_content = (project_path / 'README.md').read_text()
+            assert '## Docker Commands' in readme_content
+            assert 'docker-compose up -d' in readme_content
