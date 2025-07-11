@@ -11,6 +11,10 @@ Interactive Python CLI tool that scaffolds new projects optimized for Claude Cod
 - 🔧 **Multiple Tech Stacks**: Support for React, Vue, Angular, Python, Node.js, Golang, and more
 - 📦 **Database Integration**: MySQL, PostgreSQL, SQLite with Atlas migration tool support
 - 🎨 **UI Framework Support**: Tailwind CSS, shadcn/ui with automatic compatibility checking
+- ⚡ **Build Tool Selection**: Vite, Webpack, Babel + Webpack with optimized configurations
+- 🔄 **GitHub Actions CI/CD**: Automated workflow generation for testing and deployment
+- 📁 **Framework Entry Points**: Production-ready entry files for all supported frameworks
+- 📚 **Enhanced README**: Detailed setup, development, and deployment instructions
 
 ## Installation
 
@@ -58,31 +62,52 @@ The tool will guide you through selecting components for your project:
 - SQLite
 - Skip
 
+### Build Tool Options (for frontend)
+- Vite (recommended - fast HMR, optimized builds)
+- Webpack (traditional bundling with extensive configuration)
+- Babel + Webpack (custom transpilation with webpack bundling)
+
 ### Additional Options
 - Atlas migration tool (recommended)
-- Package manager selection (npm, yarn, pnpm)
+- Package manager selection (npm, yarn, npx)
+- GitHub Actions CI/CD workflows (recommended)
+- Comprehensive project documentation generation
 
 ## Generated Project Structure
 
 ### Full Stack Example
 ```
 my-project/
-├── README.md
+├── README.md              # Comprehensive project documentation
 ├── CLAUDE.md              # Main project documentation
 ├── .env.example           # Environment variables template
 ├── .gitignore
 ├── package.json           # Root-level npm scripts, workspaces
 ├── requirements.txt       # Project Python dependencies
 ├── docker-compose.yml     # Database services
+├── .github/               # GitHub Actions workflows
+│   ├── workflows/
+│   │   └── ci.yml         # Continuous integration
+│   └── CLAUDE.md          # CI/CD documentation
 ├── frontend/              # React/Vue/Angular application
 │   ├── CLAUDE.md          # Frontend-specific documentation
 │   ├── package.json
+│   ├── vite.config.ts     # Build tool configuration
 │   ├── src/
+│   │   ├── main.tsx       # Application entry point
+│   │   └── App.tsx        # Main component
+│   ├── public/
 │   └── ...
 ├── backend/               # Python/Node.js/Golang API
 │   ├── CLAUDE.md          # Backend-specific documentation
 │   ├── app/
+│   │   ├── main.py        # FastAPI application entry point
+│   │   ├── api/           # API routes
+│   │   ├── domain/        # Domain models
+│   │   ├── services/      # Business logic
+│   │   └── repositories/  # Data access layer
 │   ├── requirements.txt
+│   ├── Dockerfile         # Container configuration
 │   └── ...
 └── migrations/            # Database migrations (Atlas)
     ├── CLAUDE.md          # Migration documentation
@@ -94,12 +119,14 @@ my-project/
 Each generated project includes comprehensive CLAUDE.md files containing:
 
 - **Project Description Template**
-- **Technology Stack Overview**
+- **Technology Stack Overview** (including build tools and CI/CD)
 - **Environment Setup Instructions**
-- **Development Commands**
+- **Development Commands** (framework-specific with build tools)
 - **Architecture Patterns**
 - **Coding Standards**
 - **Testing Guidelines**
+- **Build and Deployment Instructions**
+- **CI/CD Pipeline Documentation** (if GitHub Actions selected)
 - **AI API Keys Setup** (ANTHROPIC_API_KEY, OPENAI_API_KEY, GEMINI_API_KEY)
 
 ## Environment Variables
@@ -165,9 +192,19 @@ MIT License - see LICENSE file for details
 
 ## Roadmap
 
-- Additional frontend frameworks (Svelte, Solid.js)
-- More UI frameworks (Chakra UI, Material-UI)
-- More backend options (Rust, Java, C#)
-- CI/CD pipeline templates
-- Docker deployment templates
-- IDE configuration files
+### ✅ Recently Completed (v0.2.0)
+- **Frontend Build Tools**: Vite, Webpack, Babel + Webpack support
+- **GitHub Actions CI/CD**: Comprehensive workflow generation
+- **Framework Entry Points**: React, Vue, Angular, Python entry files
+- **Enhanced README Generation**: Detailed development instructions
+- **Build Tool Configurations**: Vite and Webpack config files
+- **Package Manager Selection**: npm, yarn, npx support
+
+### 🔄 In Progress
+- **Testing Framework Integration**: Jest, Vitest, Pytest templates
+- **Database ORM Integration**: Prisma, SQLAlchemy, TypeORM
+
+### 📋 Planned Features
+- **Advanced Docker Support**: Multi-stage builds, docker-compose enhancements
+- **IDE Configuration Files**: VS Code, JetBrains settings
+- **Deployment Templates**: Vercel, Netlify, AWS, GCP configurations
