@@ -82,7 +82,12 @@ The tool will prompt users to select components with **single choice per categor
 ├── .gitignore
 ├── package.json           # (optional) For root-level npm scripts, workspaces
 ├── requirements.txt       # Project Python dependencies
-├── docker-compose.yml     # (if database selected)
+├── infra/                 # Docker infrastructure (mandatory)
+│   └── docker/
+│       ├── frontend/
+│       ├── backend/
+│       ├── db/
+│       └── docker-compose*.yml
 ├── .github/               # (if GitHub Actions selected)
 │   └── workflows/         # CI/CD workflow files
 ├── frontend/              # (if frontend selected)
@@ -122,7 +127,6 @@ backend/
 │   ├── repositories/      # Data access layer
 │   └── infrastructure/    # External services, database
 ├── requirements.txt
-├── Dockerfile
 └── tests/
 ```
 
@@ -132,6 +136,22 @@ migrations/
 ├── CLAUDE.md              # Database migration documentation
 ├── atlas.hcl              # Atlas configuration
 └── migrations/            # Migration files (if Atlas selected)
+```
+
+### Infrastructure Structure
+```
+infra/
+└── docker/
+    ├── frontend/
+    │   └── Dockerfile         # Build-tool specific (Vite/Webpack/Babel)
+    ├── backend/
+    │   └── Dockerfile         # Language-specific (Python/Node.js/Golang)
+    ├── db/
+    │   └── Dockerfile         # Standard database image configuration
+    ├── docker-compose.yml     # Main compose file
+    ├── docker-compose.dev.yml # Development environment
+    ├── docker-compose.staging.yml # Staging environment
+    └── docker-compose.prod.yml # Production environment
 ```
 
 ### GitHub Actions Structure
@@ -190,6 +210,11 @@ Each subfolder with code will have its own CLAUDE.md containing:
   - Backend: Start server with framework-specific commands
   - Database: Migration and seeding commands
   - Testing: Unit and integration test commands
+- **Docker Commands**
+  - Start all services: `docker-compose -f infra/docker/docker-compose.yml up`
+  - Development environment: `docker-compose -f infra/docker/docker-compose.dev.yml up`
+  - Stop services: `docker-compose -f infra/docker/docker-compose.yml down`
+  - Rebuild containers: `docker-compose -f infra/docker/docker-compose.yml up --build`
 - **Build and Deployment**
   - Production build commands
   - Environment-specific configurations
@@ -257,7 +282,7 @@ PORT=8000
   - Production: `go build && ./app-name`
 
 ### Database Integration
-- **Docker Compose**: Service definitions for selected databases
+- **Docker Infrastructure**: Service definitions in infra/docker/docker-compose.yml
 - **Atlas Migration Tool**: 
   - Installation instructions in generated documentation and CLAUDE.md files
   - Sample configuration files
@@ -335,6 +360,54 @@ create-claude-app/
 ### Entry Point
 - Command: `create-claude-app`
 - Entry point: `create_claude_app.cli:main`
+
+## Infrastructure Configuration
+
+### Docker Infrastructure (Mandatory Feature)
+The tool automatically generates Docker infrastructure for all projects, creating a standardized development and deployment environment.
+
+#### Infrastructure Structure
+```
+/my-project-root/
+├── infra/
+│   └── docker/
+│       ├── frontend/
+│       │   └── Dockerfile        # Build-tool specific Dockerfile
+│       ├── backend/
+│       │   └── Dockerfile        # Language-specific Dockerfile
+│       ├── db/
+│       │   └── Dockerfile        # Standard database image configuration
+│       ├── docker-compose.yml    # Main compose file
+│       ├── docker-compose.dev.yml     # Development environment
+│       ├── docker-compose.staging.yml # Staging environment
+│       └── docker-compose.prod.yml    # Production environment
+```
+
+#### Frontend Dockerfiles
+- **Build-tool specific**: Different Dockerfile templates for Vite, Webpack, and Babel + Webpack
+- **Single-stage builds**: Simplified containerization without multi-stage optimization
+- **Development focused**: Optimized for development workflow with hot reloading support
+
+#### Backend Dockerfiles
+- **Language-specific**: Separate Dockerfile templates for Python, Node.js, and Golang
+- **Framework-agnostic**: Focus on language runtime rather than specific frameworks
+- **Optimization documentation**: Include brief optimization notes in backend README.md and CLAUDE.md
+
+#### Database Dockerfiles
+- **Standard images**: Use official database images (mysql:8.0, postgres:15, sqlite)
+- **Configuration-based**: Environment-specific configuration through compose files
+- **Volume management**: Persistent data storage configuration
+
+#### Docker Compose Files
+- **Base compose**: `docker-compose.yml` with core service definitions
+- **Environment-specific**: Development, staging, and production variants
+- **Service orchestration**: Frontend, backend, and database service coordination
+- **Network configuration**: Internal service communication setup
+
+#### Generated Documentation
+- **Docker optimization sections**: Brief optimization notes added to backend README.md and CLAUDE.md
+- **Development workflow**: Instructions for using Docker in development
+- **Environment management**: Guide for switching between dev/staging/prod environments
 
 ## Technical Requirements
 

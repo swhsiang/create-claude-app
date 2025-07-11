@@ -25,6 +25,7 @@ Interactive Python CLI tool that scaffolds new projects optimized for Claude Cod
 pip install create-claude-app
 
 # Install via homebrew (coming soon)
+brew tap yourusername/create-claude-app
 brew install create-claude-app
 ```
 
