@@ -1,0 +1,4 @@
+include README.md
+include LICENSE
+include CLAUDE.md
+recursive-include src/create_claude_app/templates *

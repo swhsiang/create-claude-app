@@ -8,6 +8,8 @@ from create_claude_app.prompts import (
     get_database_choice,
     get_package_manager_choice,
     get_atlas_choice,
+    get_build_tool_choice,
+    get_github_actions_choice,
     ProjectConfiguration,
 )
 
@@ -140,7 +142,9 @@ class TestPrompts:
             backend='python',
             database='postgresql',
             package_manager='npm',
-            use_atlas=True
+            use_atlas=True,
+            build_tool='vite',
+            use_github_actions=True
         )
         
         assert config.project_name == 'test-project'
@@ -150,6 +154,8 @@ class TestPrompts:
         assert config.database == 'postgresql'
         assert config.package_manager == 'npm'
         assert config.use_atlas is True
+        assert config.build_tool == 'vite'
+        assert config.use_github_actions is True
 
     def test_project_configuration_with_none_values(self):
         """Test ProjectConfiguration with None values (skipped options)."""
@@ -160,7 +166,9 @@ class TestPrompts:
             backend=None,
             database=None,
             package_manager=None,
-            use_atlas=False
+            use_atlas=False,
+            build_tool=None,
+            use_github_actions=False
         )
         
         assert config.project_name == 'test-project'
@@ -170,3 +178,43 @@ class TestPrompts:
         assert config.database is None
         assert config.package_manager is None
         assert config.use_atlas is False
+        assert config.build_tool is None
+        assert config.use_github_actions is False
+
+    def test_get_build_tool_choice_valid_options(self):
+        """Test build tool selection with valid options."""
+        with patch('rich.prompt.Prompt.ask') as mock_ask:
+            mock_ask.return_value = '1'
+            result = get_build_tool_choice('react')
+            assert result == 'vite'
+            
+            mock_ask.return_value = '2'
+            result = get_build_tool_choice('react')
+            assert result == 'webpack'
+            
+            mock_ask.return_value = '3'
+            result = get_build_tool_choice('react')
+            assert result == 'babel'
+
+    def test_get_build_tool_choice_no_frontend(self):
+        """Test build tool selection when no frontend is selected."""
+        result = get_build_tool_choice(None)
+        assert result is None
+
+    def test_get_github_actions_choice_valid_options(self):
+        """Test GitHub Actions selection with valid options."""
+        with patch('rich.prompt.Confirm.ask') as mock_ask:
+            mock_ask.return_value = True
+            result = get_github_actions_choice()
+            assert result is True
+            
+            mock_ask.return_value = False
+            result = get_github_actions_choice()
+            assert result is False
+
+    def test_get_github_actions_choice_default_yes(self):
+        """Test GitHub Actions selection defaults to yes."""
+        with patch('rich.prompt.Confirm.ask') as mock_ask:
+            mock_ask.return_value = True  # Default should be True
+            result = get_github_actions_choice()
+            assert result is True

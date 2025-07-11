@@ -19,6 +19,8 @@ class ProjectConfiguration:
     database: Optional[str] = None
     package_manager: Optional[str] = None
     use_atlas: bool = False
+    build_tool: Optional[str] = None
+    use_github_actions: bool = False
 
 
 def get_frontend_choice() -> Optional[str]:
@@ -212,5 +214,57 @@ def get_atlas_choice() -> bool:
     console.print("\n[bold cyan]Database Migration Tool:[/bold cyan]")
     return Confirm.ask(
         "Would you like to include Atlas migration tool?",
+        default=True
+    )
+
+
+def get_build_tool_choice(frontend: Optional[str]) -> Optional[str]:
+    """Get user's build tool choice.
+    
+    Args:
+        frontend: Selected frontend framework
+        
+    Returns:
+        Selected build tool or None if no frontend selected
+    """
+    if not frontend:
+        return None
+        
+    console.print("\n[bold cyan]Frontend Build Tool Options:[/bold cyan]")
+    table = Table(show_header=False, show_lines=False)
+    table.add_column("Option", style="cyan")
+    table.add_column("Build Tool", style="white")
+    table.add_column("Description", style="dim")
+    
+    table.add_row("1", "Vite", "(recommended - fast HMR, optimized builds)")
+    table.add_row("2", "Webpack", "(traditional bundling with extensive configuration)")
+    table.add_row("3", "Babel + Webpack", "(custom transpilation with webpack bundling)")
+    
+    console.print(table)
+    
+    choice = Prompt.ask(
+        "Select build tool",
+        choices=["1", "2", "3"],
+        default="1"
+    )
+    
+    choices_map = {
+        "1": "vite",
+        "2": "webpack", 
+        "3": "babel"
+    }
+    
+    return choices_map[choice]
+
+
+def get_github_actions_choice() -> bool:
+    """Get user's GitHub Actions CI/CD choice.
+    
+    Returns:
+        True if user wants GitHub Actions, False otherwise
+    """
+    console.print("\n[bold cyan]GitHub Actions CI/CD:[/bold cyan]")
+    return Confirm.ask(
+        "Would you like to include GitHub Actions workflows?",
         default=True
     )

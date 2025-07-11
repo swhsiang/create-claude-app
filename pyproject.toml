@@ -7,14 +7,14 @@ name = "create-claude-app"
 version = "0.1.0"
 description = "Interactive Python CLI tool that scaffolds new projects optimized for Claude Code development"
 readme = "README.md"
-license = {file = "LICENSE"}
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [
     {name = "Wen-Hsiang Shih", email = "swh@hsiang.io"}
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",

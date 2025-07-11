@@ -13,6 +13,8 @@ from .prompts import (
     get_database_choice,
     get_package_manager_choice,
     get_atlas_choice,
+    get_build_tool_choice,
+    get_github_actions_choice,
 )
 from .validators import validate_project_name, validate_directory_not_exists, validate_compatibility
 from .generators import generate_project
@@ -48,10 +50,12 @@ def create_project(project_name: str) -> None:
     
     frontend = get_frontend_choice()
     ui_framework = get_ui_framework_choice(frontend)
+    build_tool = get_build_tool_choice(frontend)
     backend = get_backend_choice()
     database = get_database_choice()
     package_manager = get_package_manager_choice(backend)
     use_atlas = get_atlas_choice() if database else False
+    use_github_actions = get_github_actions_choice()
     
     # Validate compatibility
     validate_compatibility(frontend, ui_framework)
@@ -64,7 +68,9 @@ def create_project(project_name: str) -> None:
         backend=backend,
         database=database,
         package_manager=package_manager,
-        use_atlas=use_atlas
+        use_atlas=use_atlas,
+        build_tool=build_tool,
+        use_github_actions=use_github_actions
     )
     
     # Generate the project

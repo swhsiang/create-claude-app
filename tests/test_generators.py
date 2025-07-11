@@ -10,6 +10,12 @@ from create_claude_app.generators import (
     generate_package_json,
     generate_requirements_txt,
     generate_docker_compose,
+    generate_ci_workflow,
+    generate_github_actions_files,
+    generate_frontend_entry_points,
+    generate_backend_entry_points,
+    generate_react_app_tsx,
+    generate_python_main_py,
     TemplateGenerator,
     TemplateError,
 )
@@ -280,3 +286,236 @@ class TestTemplateGenerator:
         error = TemplateError("Test error", template="test.txt")
         assert str(error) == "Test error"
         assert error.template == "test.txt"
+
+    def test_generate_ci_workflow_with_frontend(self):
+        """Test generating CI workflow with frontend."""
+        config = ProjectConfiguration(
+            project_name='test-app',
+            frontend='react',
+            package_manager='npm',
+            use_github_actions=True
+        )
+        
+        content = generate_ci_workflow(config)
+        
+        # Check basic structure
+        assert 'name: CI' in content
+        assert 'on:' in content
+        assert 'jobs:' in content
+        
+        # Check frontend job
+        assert 'frontend:' in content
+        assert 'Frontend Tests' in content
+        assert 'npm install' in content
+        assert 'npm test' in content
+        assert 'npm run build' in content
+
+    def test_generate_ci_workflow_with_backend(self):
+        """Test generating CI workflow with backend."""
+        config = ProjectConfiguration(
+            project_name='test-app',
+            backend='python',
+            use_github_actions=True
+        )
+        
+        content = generate_ci_workflow(config)
+        
+        # Check backend job
+        assert 'backend:' in content
+        assert 'Backend Tests' in content
+        assert 'pip install' in content
+        assert 'pytest tests/' in content
+        assert 'python-version: \'3.11\'' in content
+
+    def test_generate_ci_workflow_with_database(self):
+        """Test generating CI workflow with database."""
+        config = ProjectConfiguration(
+            project_name='test-app',
+            database='postgresql',
+            use_github_actions=True
+        )
+        
+        content = generate_ci_workflow(config)
+        
+        # Check database job
+        assert 'database:' in content
+        assert 'Database Tests' in content
+        assert 'postgresql:' in content
+        assert 'postgres:15' in content
+        assert 'POSTGRES_DB' in content
+
+    def test_generate_github_actions_files(self):
+        """Test generating GitHub Actions files."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            config = ProjectConfiguration(
+                project_name='test-app',
+                frontend='react',
+                backend='python',
+                database='postgresql',
+                use_github_actions=True
+            )
+            
+            project_path = Path(temp_dir) / 'test-app'
+            project_path.mkdir()
+            
+            files_created = generate_github_actions_files(project_path, config)
+            
+            # Check files were created
+            assert len(files_created) == 2
+            assert any('ci.yml' in f for f in files_created)
+            assert any('CLAUDE.md' in f for f in files_created)
+            
+            # Check directories exist
+            assert (project_path / '.github' / 'workflows').exists()
+            assert (project_path / '.github' / 'workflows' / 'ci.yml').exists()
+            assert (project_path / '.github' / 'CLAUDE.md').exists()
+
+    def test_generate_project_with_github_actions(self):
+        """Test generating project with GitHub Actions enabled."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            config = ProjectConfiguration(
+                project_name='test-project',
+                frontend='react',
+                backend='python',
+                database='postgresql',
+                use_github_actions=True
+            )
+            
+            project_path = Path(temp_dir) / 'test-project'
+            result = generate_project(str(project_path), config)
+            
+            # Check that project was created
+            assert project_path.exists()
+            assert result['success'] is True
+            
+            # Check GitHub Actions files were created
+            assert (project_path / '.github' / 'workflows' / 'ci.yml').exists()
+            assert (project_path / '.github' / 'CLAUDE.md').exists()
+            
+            # Verify workflow content
+            ci_content = (project_path / '.github' / 'workflows' / 'ci.yml').read_text()
+            assert 'name: CI' in ci_content
+            assert 'frontend:' in ci_content
+            assert 'backend:' in ci_content
+            assert 'database:' in ci_content
+
+    def test_generate_frontend_entry_points_react(self):
+        """Test generating React entry points."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            config = ProjectConfiguration(
+                project_name='react-app',
+                frontend='react',
+                build_tool='vite',
+                ui_framework='tailwind'
+            )
+            
+            project_path = Path(temp_dir) / 'react-app'
+            project_path.mkdir()
+            
+            files_created = generate_frontend_entry_points(project_path, config)
+            
+            # Check files were created
+            assert len(files_created) >= 4  # index.html, main.tsx, App.tsx, vite.config.ts
+            
+            # Check specific files exist
+            frontend_path = project_path / 'frontend'
+            assert (frontend_path / 'public' / 'index.html').exists()
+            assert (frontend_path / 'src' / 'main.tsx').exists()
+            assert (frontend_path / 'src' / 'App.tsx').exists()
+            assert (frontend_path / 'vite.config.ts').exists()
+            
+            # Check file contents
+            app_content = (frontend_path / 'src' / 'App.tsx').read_text()
+            assert 'react-app' in app_content
+            assert 'Welcome to react-app' in app_content
+
+    def test_generate_backend_entry_points_python(self):
+        """Test generating Python backend entry points."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            config = ProjectConfiguration(
+                project_name='python-app',
+                backend='python'
+            )
+            
+            project_path = Path(temp_dir) / 'python-app'
+            project_path.mkdir()
+            
+            files_created = generate_backend_entry_points(project_path, config)
+            
+            # Check files were created
+            assert len(files_created) >= 7  # main.py, __init__.py, 5 subdirs, Dockerfile
+            
+            # Check specific files exist
+            backend_path = project_path / 'backend'
+            assert (backend_path / 'app' / 'main.py').exists()
+            assert (backend_path / 'app' / '__init__.py').exists()
+            assert (backend_path / 'Dockerfile').exists()
+            
+            # Check directory structure
+            for subdir in ['api', 'domain', 'services', 'repositories', 'infrastructure']:
+                assert (backend_path / 'app' / subdir).exists()
+                assert (backend_path / 'app' / subdir / '__init__.py').exists()
+            
+            # Check file contents
+            main_content = (backend_path / 'app' / 'main.py').read_text()
+            assert 'python-app' in main_content
+            assert 'FastAPI' in main_content
+
+    def test_generate_react_app_tsx_with_tailwind(self):
+        """Test generating React App.tsx with Tailwind CSS."""
+        config = ProjectConfiguration(
+            project_name='tailwind-app',
+            frontend='react',
+            ui_framework='tailwind'
+        )
+        
+        content = generate_react_app_tsx(config)
+        
+        assert 'tailwind-app' in content
+        assert 'Welcome to tailwind-app' in content
+        assert 'Tailwind CSS' in content
+        assert 'import \'./App.css\'' not in content  # Should not import CSS with Tailwind
+
+    def test_generate_python_main_py_content(self):
+        """Test generating Python main.py content."""
+        config = ProjectConfiguration(
+            project_name='api-app',
+            backend='python'
+        )
+        
+        content = generate_python_main_py(config)
+        
+        assert 'api-app' in content
+        assert 'FastAPI' in content
+        assert 'from fastapi import FastAPI' in content
+        assert 'CORSMiddleware' in content
+        assert 'Welcome to api-app API' in content
+
+    def test_generate_project_with_entry_points(self):
+        """Test generating project with entry points."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            config = ProjectConfiguration(
+                project_name='full-app',
+                frontend='react',
+                backend='python',
+                build_tool='vite',
+                ui_framework='tailwind'
+            )
+            
+            project_path = Path(temp_dir) / 'full-app'
+            result = generate_project(str(project_path), config)
+            
+            # Check that project was created
+            assert project_path.exists()
+            assert result['success'] is True
+            
+            # Check frontend entry points
+            frontend_path = project_path / 'frontend'
+            assert (frontend_path / 'src' / 'main.tsx').exists()
+            assert (frontend_path / 'src' / 'App.tsx').exists()
+            assert (frontend_path / 'vite.config.ts').exists()
+            
+            # Check backend entry points
+            backend_path = project_path / 'backend'
+            assert (backend_path / 'app' / 'main.py').exists()
+            assert (backend_path / 'Dockerfile').exists()
