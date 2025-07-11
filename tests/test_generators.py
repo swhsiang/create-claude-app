@@ -520,3 +520,110 @@ class TestTemplateGenerator:
             backend_path = project_path / 'backend'
             assert (backend_path / 'app' / 'main.py').exists()
             assert (backend_path / 'Dockerfile').exists()
+
+    def test_generate_readme_comprehensive(self):
+        """Test generating comprehensive README with all features."""
+        config = ProjectConfiguration(
+            project_name='comprehensive-app',
+            frontend='react',
+            backend='python',
+            database='postgresql',
+            build_tool='vite',
+            ui_framework='tailwind',
+            package_manager='npm',
+            use_atlas=True,
+            use_github_actions=True
+        )
+        
+        content = generate_readme(config)
+        
+        # Check basic structure
+        assert '# comprehensive-app' in content
+        assert 'Quick Start Guide' in content
+        assert 'Technology Stack' in content
+        assert 'Development Setup' in content
+        assert 'Development Commands' in content
+        assert 'Project Structure' in content
+        
+        # Check technology stack details
+        assert 'React (Vite)' in content
+        assert 'Tailwind CSS' in content
+        assert 'Python (FastAPI)' in content
+        assert 'PostgreSQL' in content
+        assert 'Atlas' in content
+        assert 'GitHub Actions' in content
+        assert 'npm' in content
+        
+        # Check development instructions
+        assert 'npm install' in content
+        assert 'pip install -r requirements.txt' in content
+        assert 'uvicorn app.main:app --reload' in content
+        assert 'docker-compose up -d' in content
+        
+        # Check project structure
+        assert 'frontend/' in content
+        assert 'backend/' in content
+        assert 'migrations/' in content
+        assert '.github/' in content
+        assert 'main.tsx' in content
+        assert 'vite.config.ts' in content
+
+    def test_generate_readme_minimal(self):
+        """Test generating minimal README with no optional features."""
+        config = ProjectConfiguration(
+            project_name='minimal-app',
+            frontend=None,
+            backend=None,
+            database=None,
+            build_tool=None,
+            ui_framework=None,
+            package_manager=None,
+            use_atlas=False,
+            use_github_actions=False
+        )
+        
+        content = generate_readme(config)
+        
+        # Check basic structure
+        assert '# minimal-app' in content
+        assert 'Quick Start Guide' in content
+        assert 'Technology Stack' in content
+        
+        # Should not include optional features
+        assert 'Frontend:' not in content
+        assert 'Backend:' not in content
+        assert 'Database:' not in content
+        assert 'npm install' not in content
+        assert 'pip install' not in content
+        assert 'docker-compose' not in content
+
+    def test_generate_readme_frontend_only(self):
+        """Test generating README with frontend only."""
+        config = ProjectConfiguration(
+            project_name='frontend-app',
+            frontend='vue',
+            backend=None,
+            database=None,
+            build_tool='vite',
+            ui_framework='tailwind',
+            package_manager='yarn',
+            use_atlas=False,
+            use_github_actions=False
+        )
+        
+        content = generate_readme(config)
+        
+        # Check frontend-specific content
+        assert 'Vue (Vite)' in content
+        assert 'Tailwind CSS' in content
+        assert 'yarn' in content
+        assert 'Node.js 18+ and yarn' in content
+        assert 'yarn install' in content
+        assert 'yarn run dev' in content
+        assert 'main.vue' in content
+        
+        # Should not include backend/database content
+        assert 'Backend:' not in content
+        assert 'Database:' not in content
+        assert 'pip install' not in content
+        assert 'backend/' not in content

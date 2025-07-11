@@ -333,7 +333,7 @@ A modern application built with best practices for AI-assisted development.
         content += f"- **Backend**: {backend_display}\n"
     
     if config.database:
-        db_display = "PostgreSQL" if config.database == "postgresql" else config.database.title()
+        db_display = "PostgreSQL" if config.database == "postgresql" else ("MySQL" if config.database == "mysql" else config.database.title())
         content += f"- **Database**: {db_display}\n"
         if config.use_atlas:
             content += f"- **Migrations**: Atlas\n"
@@ -1240,6 +1240,18 @@ def generate_frontend_entry_points(project_path: Path, config: ProjectConfigurat
         app_path = src_path / 'App.vue'
         write_file_safe(str(app_path), app_vue)
         files_created.append(str(app_path))
+        
+        # Generate build tool config
+        if config.build_tool == 'vite':
+            vite_config = generate_vite_config_vue(config)
+            vite_path = frontend_path / 'vite.config.ts'
+            write_file_safe(str(vite_path), vite_config)
+            files_created.append(str(vite_path))
+        elif config.build_tool == 'webpack':
+            webpack_config = generate_webpack_config_vue(config)
+            webpack_path = frontend_path / 'webpack.config.js'
+            write_file_safe(str(webpack_path), webpack_config)
+            files_created.append(str(webpack_path))
     
     elif config.frontend == 'angular':
         # Generate Angular entry points
@@ -1363,7 +1375,7 @@ export default App"""
 
 
 def generate_vite_config(config: ProjectConfiguration) -> str:
-    """Generate vite.config.ts."""
+    """Generate vite.config.ts for React."""
     return f"""import {{ defineConfig }} from 'vite'
 import react from '@vitejs/plugin-react'
 
@@ -1381,8 +1393,27 @@ export default defineConfig({{
 }})"""
 
 
+def generate_vite_config_vue(config: ProjectConfiguration) -> str:
+    """Generate vite.config.ts for Vue."""
+    return f"""import {{ defineConfig }} from 'vite'
+import vue from '@vitejs/plugin-vue'
+
+// https://vitejs.dev/config/
+export default defineConfig({{
+  plugins: [vue()],
+  server: {{
+    port: 3000,
+    open: true,
+  }},
+  build: {{
+    outDir: 'dist',
+    sourcemap: true,
+  }},
+}}))"""
+
+
 def generate_webpack_config(config: ProjectConfiguration) -> str:
-    """Generate webpack.config.js."""
+    """Generate webpack.config.js for React."""
     return f"""const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
@@ -1410,6 +1441,56 @@ module.exports = {{
     ],
   }},
   plugins: [
+    new HtmlWebpackPlugin({{
+      template: './public/index.html',
+    }}),
+  ],
+  devServer: {{
+    static: './dist',
+    hot: true,
+    port: 3000,
+  }},
+}};"""
+
+
+def generate_webpack_config_vue(config: ProjectConfiguration) -> str:
+    """Generate webpack.config.js for Vue."""
+    return f"""const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const {{ VueLoaderPlugin }} = require('vue-loader');
+
+module.exports = {{
+  mode: 'development',
+  entry: './src/main.ts',
+  output: {{
+    path: path.resolve(__dirname, 'dist'),
+    filename: 'bundle.js',
+  }},
+  resolve: {{
+    extensions: ['.vue', '.ts', '.js'],
+  }},
+  module: {{
+    rules: [
+      {{
+        test: /\\.vue$/,
+        loader: 'vue-loader',
+      }},
+      {{
+        test: /\\.ts$/,
+        loader: 'ts-loader',
+        options: {{
+          appendTsSuffixTo: [/\\.vue$/],
+        }},
+        exclude: /node_modules/,
+      }},
+      {{
+        test: /\\.css$/,
+        use: ['style-loader', 'css-loader'],
+      }},
+    ],
+  }},
+  plugins: [
+    new VueLoaderPlugin(),
     new HtmlWebpackPlugin({{
       template: './public/index.html',
     }}),
