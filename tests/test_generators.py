@@ -16,6 +16,7 @@ from create_claude_app.generators import (
     generate_backend_entry_points,
     generate_react_app_tsx,
     generate_python_main_py,
+    generate_readme,
     TemplateGenerator,
     TemplateError,
 )
