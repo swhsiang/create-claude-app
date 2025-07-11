@@ -212,7 +212,7 @@ class TestIntegration:
                     '2',  # Webpack (build tool)
                     '1',  # Python
                     '1',  # MySQL
-                    '3',  # yarn
+                    '2',  # yarn
                     'y',  # Yes to Atlas
                     'y'   # Yes to GitHub Actions
                 ]

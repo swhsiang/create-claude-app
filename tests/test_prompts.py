@@ -108,10 +108,6 @@ class TestPrompts:
             
             mock_ask.return_value = '2'
             result = get_package_manager_choice('vue')
-            assert result == 'npx'
-            
-            mock_ask.return_value = '3'
-            result = get_package_manager_choice('angular')
             assert result == 'yarn'
 
     def test_get_package_manager_choice_returns_none_for_no_frontend(self):

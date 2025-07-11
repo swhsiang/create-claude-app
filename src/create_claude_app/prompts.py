@@ -185,21 +185,19 @@ def get_package_manager_choice(frontend: Optional[str]) -> Optional[str]:
     table.add_column("Package Manager", style="white")
     
     table.add_row("1", "npm")
-    table.add_row("2", "npx")
-    table.add_row("3", "yarn")
+    table.add_row("2", "yarn")
     
     console.print(table)
     
     choice = Prompt.ask(
         "Select package manager",
-        choices=["1", "2", "3"],
+        choices=["1", "2"],
         default="1"
     )
     
     choices_map = {
         "1": "npm",
-        "2": "npx",
-        "3": "yarn"
+        "2": "yarn"
     }
     
     return choices_map[choice]

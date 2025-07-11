@@ -69,7 +69,7 @@ The tool will guide you through selecting components for your project:
 
 ### Additional Options
 - Atlas migration tool (recommended)
-- Package manager selection (npm, yarn, npx)
+- Package manager selection (npm, yarn)
 - GitHub Actions CI/CD workflows (recommended)
 - Comprehensive project documentation generation
 
@@ -198,7 +198,7 @@ MIT License - see LICENSE file for details
 - **Framework Entry Points**: React, Vue, Angular, Python entry files
 - **Enhanced README Generation**: Detailed development instructions
 - **Build Tool Configurations**: Vite and Webpack config files
-- **Package Manager Selection**: npm, yarn, npx support
+- **Package Manager Selection**: npm, yarn support
 
 ### 🔄 In Progress
 - **Testing Framework Integration**: Jest, Vitest, Pytest templates

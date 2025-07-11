@@ -56,9 +56,8 @@ The tool will prompt users to select components with **single choice per categor
 - Default: Yes
 - Provides Atlas installation instructions and sample configuration in generated documentation and CLAUDE.md files
 
-### Package Manager Options (if Node.js selected)
+### Package Manager Options (if frontend selected)
 - ( ) npm
-- ( ) npx  
 - ( ) yarn
 
 ### Frontend Build Tool Options (if frontend selected)
