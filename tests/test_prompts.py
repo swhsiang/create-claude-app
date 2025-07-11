@@ -99,27 +99,24 @@ class TestPrompts:
             result = get_database_choice()
             assert result is None  # Skip option
 
-    def test_get_package_manager_choice_nodejs(self):
-        """Test package manager selection for Node.js."""
+    def test_get_package_manager_choice_frontend(self):
+        """Test package manager selection for frontend projects."""
         with patch('rich.prompt.Prompt.ask') as mock_ask:
             mock_ask.return_value = '1'
-            result = get_package_manager_choice('nodejs')
+            result = get_package_manager_choice('react')
             assert result == 'npm'
             
             mock_ask.return_value = '2'
-            result = get_package_manager_choice('nodejs')
+            result = get_package_manager_choice('vue')
             assert result == 'npx'
             
             mock_ask.return_value = '3'
-            result = get_package_manager_choice('nodejs')
+            result = get_package_manager_choice('angular')
             assert result == 'yarn'
 
-    def test_get_package_manager_choice_returns_none_for_non_nodejs(self):
-        """Test that package manager selection returns None for non-Node.js backends."""
-        result = get_package_manager_choice('python')
-        assert result is None
-        
-        result = get_package_manager_choice('golang')
+    def test_get_package_manager_choice_returns_none_for_no_frontend(self):
+        """Test that package manager selection returns None for no frontend."""
+        result = get_package_manager_choice(None)
         assert result is None
 
     def test_get_atlas_choice_defaults_to_yes(self):

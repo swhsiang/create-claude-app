@@ -361,7 +361,8 @@ A modern application built with best practices for AI-assisted development.
         content += f"- Python 3.11+\n"
     
     if config.database:
-        content += f"- Docker (for {config.database.title()} database)\n"
+        db_display = "PostgreSQL" if config.database == "postgresql" else ("MySQL" if config.database == "mysql" else config.database.title())
+        content += f"- Docker (for {db_display} database)\n"
     
     content += f"""
 ### Environment Variables Setup
@@ -378,8 +379,9 @@ A modern application built with best practices for AI-assisted development.
 """
     
     if config.database:
+        db_display = "PostgreSQL" if config.database == "postgresql" else ("MySQL" if config.database == "mysql" else config.database.title())
         content += f"""### Database Setup
-Start the {config.database.title()} database using Docker:
+Start the {db_display} database using Docker:
 ```bash
 docker-compose up -d
 ```

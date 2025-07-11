@@ -244,7 +244,7 @@ class TestIntegration:
                 assert 'Vue (Webpack)' in readme_content
                 assert 'Tailwind CSS' in readme_content
                 assert 'Python (FastAPI)' in readme_content
-                assert 'Mysql' in readme_content
+                assert 'MySQL' in readme_content
                 assert 'yarn' in readme_content
                 assert 'GitHub Actions' in readme_content
                 assert 'Development Setup' in readme_content

@@ -53,7 +53,7 @@ def create_project(project_name: str) -> None:
     build_tool = get_build_tool_choice(frontend)
     backend = get_backend_choice()
     database = get_database_choice()
-    package_manager = get_package_manager_choice(backend)
+    package_manager = get_package_manager_choice(frontend)
     use_atlas = get_atlas_choice() if database else False
     use_github_actions = get_github_actions_choice()
     

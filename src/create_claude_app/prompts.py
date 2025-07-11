@@ -167,16 +167,16 @@ def get_database_choice() -> Optional[str]:
     return choices_map[choice]
 
 
-def get_package_manager_choice(backend: Optional[str]) -> Optional[str]:
-    """Get user's package manager choice for Node.js projects.
+def get_package_manager_choice(frontend: Optional[str]) -> Optional[str]:
+    """Get user's package manager choice for frontend projects.
     
     Args:
-        backend: Selected backend framework
+        frontend: Selected frontend framework
         
     Returns:
-        Selected package manager or None if not Node.js
+        Selected package manager or None if no frontend
     """
-    if backend != "nodejs":
+    if not frontend:
         return None
     
     console.print("\n[bold cyan]Package Manager Options:[/bold cyan]")
