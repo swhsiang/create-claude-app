@@ -15,6 +15,8 @@ Interactive Python CLI tool that scaffolds new projects optimized for Claude Cod
 - 🔄 **GitHub Actions CI/CD**: Automated workflow generation for testing and deployment
 - 📁 **Framework Entry Points**: Production-ready entry files for all supported frameworks
 - 📚 **Enhanced README**: Detailed setup, development, and deployment instructions
+- 🐳 **Docker Infrastructure**: Complete containerization with multi-stage builds and environment-specific configurations
+- 🏗️ **Docker Compose**: Development, staging, and production docker-compose files with optimized configurations
 
 ## Installation
 
@@ -71,6 +73,7 @@ The tool will guide you through selecting components for your project:
 - Atlas migration tool (recommended)
 - Package manager selection (npm, yarn)
 - GitHub Actions CI/CD workflows (recommended)
+- Docker infrastructure generation (recommended)
 - Comprehensive project documentation generation
 
 ## Generated Project Structure
@@ -84,11 +87,22 @@ my-project/
 ├── .gitignore
 ├── package.json           # Root-level npm scripts, workspaces
 ├── requirements.txt       # Project Python dependencies
-├── docker-compose.yml     # Database services
+├── docker-compose.yml     # Main docker-compose configuration
+├── docker-compose.dev.yml # Development environment configuration
+├── docker-compose.staging.yml # Staging environment configuration
+├── docker-compose.prod.yml # Production environment configuration
 ├── .github/               # GitHub Actions workflows
 │   ├── workflows/
 │   │   └── ci.yml         # Continuous integration
 │   └── CLAUDE.md          # CI/CD documentation
+├── infra/                 # Docker infrastructure
+│   └── docker/
+│       ├── frontend/
+│       │   └── Dockerfile # Frontend container (multi-stage build)
+│       ├── backend/
+│       │   └── Dockerfile # Backend container (Python/Node.js/Golang)
+│       └── database/
+│           └── Dockerfile # Database container (MySQL/PostgreSQL)
 ├── frontend/              # React/Vue/Angular application
 │   ├── CLAUDE.md          # Frontend-specific documentation
 │   ├── package.json
@@ -127,6 +141,7 @@ Each generated project includes comprehensive CLAUDE.md files containing:
 - **Testing Guidelines**
 - **Build and Deployment Instructions**
 - **CI/CD Pipeline Documentation** (if GitHub Actions selected)
+- **Docker Commands and Infrastructure** (complete containerization guide)
 - **AI API Keys Setup** (ANTHROPIC_API_KEY, OPENAI_API_KEY, GEMINI_API_KEY)
 
 ## Environment Variables
@@ -192,7 +207,13 @@ MIT License - see LICENSE file for details
 
 ## Roadmap
 
-### ✅ Recently Completed (v0.2.0)
+### ✅ Recently Completed (v0.3.0)
+- **Docker Infrastructure**: Complete containerization with multi-stage builds
+- **Environment-Specific Configurations**: dev, staging, prod docker-compose files
+- **Docker Optimization**: Security best practices, health checks, resource limits
+- **Enhanced README with Docker**: Complete Docker commands and infrastructure guide
+
+### ✅ Previous Features (v0.2.0)
 - **Frontend Build Tools**: Vite, Webpack, Babel + Webpack support
 - **GitHub Actions CI/CD**: Comprehensive workflow generation
 - **Framework Entry Points**: React, Vue, Angular, Python entry files
@@ -205,6 +226,6 @@ MIT License - see LICENSE file for details
 - **Database ORM Integration**: Prisma, SQLAlchemy, TypeORM
 
 ### 📋 Planned Features
-- **Advanced Docker Support**: Multi-stage builds, docker-compose enhancements
 - **IDE Configuration Files**: VS Code, JetBrains settings
 - **Deployment Templates**: Vercel, Netlify, AWS, GCP configurations
+- **Kubernetes Support**: Helm charts and k8s manifests
