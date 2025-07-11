@@ -21,6 +21,7 @@ class ProjectConfiguration:
     use_atlas: bool = False
     build_tool: Optional[str] = None
     use_github_actions: bool = False
+    use_mcp: bool = False
 
 
 def get_frontend_choice() -> Optional[str]:
@@ -264,5 +265,23 @@ def get_github_actions_choice() -> bool:
     console.print("\n[bold cyan]GitHub Actions CI/CD:[/bold cyan]")
     return Confirm.ask(
         "Would you like to include GitHub Actions workflows?",
+        default=True
+    )
+
+
+def get_mcp_choice() -> bool:
+    """Get user's MCP (Model Context Protocol) configuration choice.
+    
+    Returns:
+        True if user wants MCP integration, False otherwise
+    """
+    console.print("\n[bold cyan]Model Context Protocol (MCP) Integration:[/bold cyan]")
+    console.print("[dim]MCP enhances AI-assisted development with project-aware context using Context7[/dim]")
+    console.print("[dim]• Intelligent project understanding and navigation[/dim]")
+    console.print("[dim]• Enhanced Claude Desktop integration[/dim]")
+    console.print("[dim]• Context-aware AI assistance[/dim]")
+    
+    return Confirm.ask(
+        "Would you like to include MCP configuration? (recommended)",
         default=True
     )

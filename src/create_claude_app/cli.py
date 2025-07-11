@@ -15,6 +15,7 @@ from .prompts import (
     get_atlas_choice,
     get_build_tool_choice,
     get_github_actions_choice,
+    get_mcp_choice,
 )
 from .validators import validate_project_name, validate_directory_not_exists, validate_compatibility
 from .generators import generate_project
@@ -56,6 +57,7 @@ def create_project(project_name: str) -> None:
     package_manager = get_package_manager_choice(frontend)
     use_atlas = get_atlas_choice() if database else False
     use_github_actions = get_github_actions_choice()
+    use_mcp = get_mcp_choice()
     
     # Validate compatibility
     validate_compatibility(frontend, ui_framework)
@@ -70,7 +72,8 @@ def create_project(project_name: str) -> None:
         package_manager=package_manager,
         use_atlas=use_atlas,
         build_tool=build_tool,
-        use_github_actions=use_github_actions
+        use_github_actions=use_github_actions,
+        use_mcp=use_mcp
     )
     
     # Generate the project

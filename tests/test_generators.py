@@ -29,6 +29,9 @@ from create_claude_app.generators import (
     generate_docker_compose_prod,
     generate_readme_with_docker,
     generate_docker_optimization_docs,
+    # MCP integration functions
+    generate_mcp_config,
+    generate_mcp_documentation,
 )
 from create_claude_app.prompts import ProjectConfiguration
 
@@ -921,3 +924,188 @@ class TestDockerInfrastructureGeneration:
             readme_content = (project_path / 'README.md').read_text()
             assert '## Docker Commands' in readme_content
             assert 'docker-compose up -d' in readme_content
+
+
+class TestMCPIntegration:
+    """Test MCP (Model Context Protocol) integration functionality."""
+
+    def test_generate_mcp_config_content(self):
+        """Test generating .mcp.json configuration content."""
+        config = ProjectConfiguration(
+            project_name='mcp-app',
+            frontend='react',
+            backend='python',
+            use_mcp=True
+        )
+        
+        content = generate_mcp_config(config)
+        
+        # Check JSON structure
+        import json
+        mcp_data = json.loads(content)
+        
+        # Check Context7 configuration
+        assert 'mcpServers' in mcp_data
+        assert 'context7' in mcp_data['mcpServers']
+        assert mcp_data['mcpServers']['context7']['command'] == 'npx'
+        assert '-y' in mcp_data['mcpServers']['context7']['args']
+        assert '@upstash/context7' in mcp_data['mcpServers']['context7']['args']
+        assert 'env' in mcp_data['mcpServers']['context7']
+
+    def test_generate_mcp_config_when_disabled(self):
+        """Test that MCP config returns None when MCP is disabled."""
+        config = ProjectConfiguration(
+            project_name='no-mcp-app',
+            frontend='react',
+            backend='python',
+            use_mcp=False
+        )
+        
+        content = generate_mcp_config(config)
+        assert content is None
+
+    def test_generate_mcp_documentation_content(self):
+        """Test generating MCP documentation content."""
+        config = ProjectConfiguration(
+            project_name='mcp-docs-app',
+            frontend='react',
+            backend='python',
+            use_mcp=True
+        )
+        
+        content = generate_mcp_documentation(config)
+        
+        # Check documentation structure
+        assert 'Model Context Protocol (MCP)' in content
+        assert 'Context7' in content
+        assert 'Claude Desktop' in content
+        assert 'configuration' in content.lower()
+        assert 'installation' in content.lower()
+        assert 'usage' in content.lower()
+
+    def test_generate_mcp_documentation_when_disabled(self):
+        """Test that MCP documentation returns None when MCP is disabled."""
+        config = ProjectConfiguration(
+            project_name='no-mcp-docs-app',
+            frontend='react',
+            backend='python',
+            use_mcp=False
+        )
+        
+        content = generate_mcp_documentation(config)
+        assert content is None
+
+    def test_generate_project_with_mcp_enabled(self):
+        """Test generating project with MCP enabled."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            config = ProjectConfiguration(
+                project_name='mcp-enabled-app',
+                frontend='react',
+                backend='python',
+                database='postgresql',
+                use_mcp=True
+            )
+            
+            project_path = Path(temp_dir) / 'mcp-enabled-app'
+            result = generate_project(str(project_path), config)
+            
+            # Check that project was created
+            assert project_path.exists()
+            assert result['success'] is True
+            
+            # Check that .mcp.json was created
+            assert (project_path / '.mcp.json').exists()
+            
+            # Verify .mcp.json content
+            mcp_content = (project_path / '.mcp.json').read_text()
+            import json
+            mcp_data = json.loads(mcp_content)
+            assert 'mcpServers' in mcp_data
+            assert 'context7' in mcp_data['mcpServers']
+
+    def test_generate_project_with_mcp_disabled(self):
+        """Test generating project with MCP disabled - no .mcp.json created."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            config = ProjectConfiguration(
+                project_name='mcp-disabled-app',
+                frontend='react',
+                backend='python',
+                database='postgresql',
+                use_mcp=False
+            )
+            
+            project_path = Path(temp_dir) / 'mcp-disabled-app'
+            result = generate_project(str(project_path), config)
+            
+            # Check that project was created
+            assert project_path.exists()
+            assert result['success'] is True
+            
+            # Check that .mcp.json was NOT created
+            assert not (project_path / '.mcp.json').exists()
+
+    def test_generate_claude_md_with_mcp_documentation(self):
+        """Test that CLAUDE.md includes MCP documentation when enabled."""
+        config = ProjectConfiguration(
+            project_name='mcp-claude-app',
+            frontend='react',
+            backend='python',
+            use_mcp=True
+        )
+        
+        content = generate_claude_md(config)
+        
+        # Check that MCP section is included
+        assert 'Model Context Protocol' in content or 'MCP' in content
+        assert 'Context7' in content
+        assert '.mcp.json' in content
+
+    def test_generate_claude_md_without_mcp_documentation(self):
+        """Test that CLAUDE.md excludes MCP documentation when disabled."""
+        config = ProjectConfiguration(
+            project_name='no-mcp-claude-app',
+            frontend='react',
+            backend='python',
+            use_mcp=False
+        )
+        
+        content = generate_claude_md(config)
+        
+        # Check that MCP section is NOT included
+        assert 'Model Context Protocol' not in content
+        assert 'Context7' not in content
+        assert '.mcp.json' not in content
+
+    def test_generate_readme_with_mcp_section(self):
+        """Test that README.md includes MCP section when enabled."""
+        config = ProjectConfiguration(
+            project_name='mcp-readme-app',
+            frontend='react',
+            backend='python',
+            use_mcp=True
+        )
+        
+        content = generate_readme(config)
+        
+        # Check that MCP section is included
+        assert 'MCP Integration' in content or 'Model Context Protocol' in content
+        assert 'Context7' in content
+        assert '.mcp.json' in content
+        assert 'Claude Desktop' in content
+
+    def test_generate_readme_without_mcp_section(self):
+        """Test that README.md excludes MCP section when disabled."""
+        config = ProjectConfiguration(
+            project_name='no-mcp-readme-app',
+            frontend='react',
+            backend='python',
+            use_mcp=False
+        )
+        
+        content = generate_readme(config)
+        
+        # Check that MCP section is NOT included
+        assert 'MCP Integration' not in content
+        assert 'Model Context Protocol' not in content
+        assert 'Context7' not in content
+        assert '.mcp.json' not in content

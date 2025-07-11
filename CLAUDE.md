@@ -91,6 +91,7 @@ tests/
 6. **Phase 6**: Integration testing and package distribution ✅ COMPLETED
 7. **Phase 7**: PRD Enhancement Implementation ✅ COMPLETED
 8. **Phase 8**: Docker Infrastructure Implementation ✅ COMPLETED
+9. **Phase 9**: MCP Integration Implementation 🔄 PLANNED
 
 ### Progress Update
 **Completed:**
@@ -101,7 +102,15 @@ tests/
 - ✅ Package configuration (pyproject.toml, requirements)
 - ✅ Comprehensive test suite with pytest
 
-**Next Steps:**
+**Next Steps (Phase 9 - MCP Integration):**
+- 🔄 Add MCP prompt to user interaction flow
+- 🔄 Implement MCP configuration validation
+- 🔄 Generate .mcp.json file with Context7 configuration
+- 🔄 Add MCP documentation to generated CLAUDE.md files
+- 🔄 Integrate MCP workflow with existing project generation
+- 🔄 Add comprehensive MCP test suite
+
+**Completed Docker Infrastructure (Phase 8):**
 - ✅ Implement Docker infrastructure generation (infra/docker/ folder structure)
 - ✅ Generate build-tool specific frontend Dockerfiles
 - ✅ Generate language-specific backend Dockerfiles
@@ -191,15 +200,24 @@ git commit -m "Clear commit message describing changes"
 - **Enhanced README Tests**: Comprehensive development instruction validation ✅
 - **Build Configuration Tests**: Vite/Webpack config file generation ✅
 
-### Test Plan for Docker Infrastructure Implementation 🔄 IN PROGRESS
+### Test Plan for MCP Integration Implementation 🔄 PLANNED
 **Required Test Categories:**
-- **Docker Infrastructure Tests**: infra/docker/ folder structure creation
-- **Frontend Dockerfile Tests**: Build-tool specific Dockerfile generation (Vite/Webpack/Babel)
-- **Backend Dockerfile Tests**: Language-specific Dockerfile generation (Python/Node.js/Golang)
-- **Database Dockerfile Tests**: Standard image configuration generation
-- **Docker Compose Tests**: Environment-specific file generation (main/dev/staging/prod)
-- **README Docker Commands Tests**: Docker commands section validation
-- **Documentation Tests**: Docker optimization notes in backend README & CLAUDE.md
+- **MCP Prompt Tests**: User interaction for MCP configuration selection
+- **MCP Validation Tests**: Input validation for MCP configuration options
+- **MCP File Generation Tests**: .mcp.json creation with Context7 configuration
+- **MCP Documentation Tests**: CLAUDE.md integration with MCP setup instructions
+- **MCP Integration Tests**: End-to-end project generation with/without MCP
+- **MCP Conditional Tests**: Verify no MCP files generated when disabled
+
+### Test Plan for Docker Infrastructure Implementation ✅ COMPLETED
+**Implemented Test Categories:**
+- **Docker Infrastructure Tests**: infra/docker/ folder structure creation ✅
+- **Frontend Dockerfile Tests**: Build-tool specific Dockerfile generation (Vite/Webpack/Babel) ✅
+- **Backend Dockerfile Tests**: Language-specific Dockerfile generation (Python/Node.js/Golang) ✅
+- **Database Dockerfile Tests**: Standard image configuration generation ✅
+- **Docker Compose Tests**: Environment-specific file generation (main/dev/staging/prod) ✅
+- **README Docker Commands Tests**: Docker commands section validation ✅
+- **Documentation Tests**: Docker optimization notes in backend README & CLAUDE.md ✅
 
 ### Implementation Summary
 ✅ **Core TDD Phases Completed**:
@@ -222,6 +240,12 @@ git commit -m "Clear commit message describing changes"
 13. ✅ Database Dockerfiles (standard images)
 14. ✅ Environment-specific docker-compose files
 15. ✅ README.md Docker commands section
+
+🔄 **MCP Integration Phase**:
+16. 🔄 MCP user prompt and validation
+17. 🔄 Context7 .mcp.json generation
+18. 🔄 MCP documentation integration
+19. 🔄 MCP test suite implementation
 
 **Current Tool Features**:
 - Interactive CLI with rich terminal UI

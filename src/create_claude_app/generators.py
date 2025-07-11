@@ -100,6 +100,17 @@ def generate_project(project_path: str, config: ProjectConfiguration) -> Dict[st
         compose_files = generate_docker_compose_environments(project_path_obj, config)
         files_created.extend(compose_files)
         
+        # Generate MCP configuration file
+        if config.use_mcp:
+            mcp_config_content = generate_mcp_config(config)
+            if mcp_config_content:
+                from .file_operations import write_mcp_config_file
+                import json
+                mcp_config_dict = json.loads(mcp_config_content)
+                mcp_file_path = write_mcp_config_file(str(project_path_obj), mcp_config_dict)
+                if mcp_file_path:
+                    files_created.append(mcp_file_path)
+        
         return {
             'success': True,
             'project_path': project_path,
@@ -239,6 +250,12 @@ uvicorn app.main:app --reload
 This project is optimized for AI-assisted development. The comprehensive documentation and clear structure enable effective collaboration with AI tools like Claude Code.
 """
     
+    # Add MCP documentation if enabled
+    if config.use_mcp:
+        mcp_docs = generate_mcp_documentation(config)
+        if mcp_docs:
+            content += mcp_docs
+    
     return content
 
 
@@ -351,6 +368,9 @@ A modern application built with best practices for AI-assisted development.
     
     if config.use_github_actions:
         content += f"- **CI/CD**: GitHub Actions\n"
+    
+    if config.use_mcp:
+        content += f"- **MCP Integration**: Context7 (Model Context Protocol)\n"
     
     content += f"""
 ## Development Setup
@@ -518,7 +538,13 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 {config.project_name}/
 ├── README.md                    # This file
 ├── CLAUDE.md                    # AI development guide
-├── .env.example                 # Environment variables template
+├── .env.example                 # Environment variables template"""
+    
+    if config.use_mcp:
+        content += f"""
+├── .mcp.json                    # Model Context Protocol configuration"""
+    
+    content += f"""
 ├── .gitignore                   # Git ignore rules
 """
     
@@ -565,7 +591,34 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
     
     content += f"""└── requirements.txt             # Root Python dependencies (if any)
 ```
+"""
+    
+    # Add MCP Integration section if enabled
+    if config.use_mcp:
+        mcp_docs = generate_mcp_documentation(config)
+        if mcp_docs:
+            # Extract just the integration section for README (simpler version)
+            content += f"""
+## MCP Integration
 
+This project includes **Context7** MCP (Model Context Protocol) integration for enhanced AI-assisted development.
+
+### Features
+- **Intelligent Context**: Context7 automatically provides relevant project information to AI assistants
+- **Smart Project Analysis**: Understands project structure, technology stack, and conventions  
+- **Enhanced AI Assistance**: Enables AI assistants to provide more accurate and contextual help
+- **Claude Desktop Integration**: Seamless integration with Claude Desktop and other MCP-compatible clients
+
+### Setup
+The `.mcp.json` file configures Context7 for your project. When you open this project in Claude Desktop, Context7 will automatically:
+1. Analyze your project structure
+2. Provide intelligent context to AI conversations
+3. Enable more accurate code suggestions and explanations
+
+For detailed setup instructions, see the MCP section in `CLAUDE.md`.
+"""
+    
+    content += f"""
 ## Contributing Guidelines
 
 1. Follow the existing code style and patterns
@@ -2524,3 +2577,104 @@ docker inspect <container-name>
 ```
 
 For more information, see the Docker documentation and our project-specific configurations."""
+
+
+def generate_mcp_config(config: ProjectConfiguration) -> Optional[str]:
+    """Generate MCP configuration content for .mcp.json file.
+    
+    Args:
+        config: Project configuration
+        
+    Returns:
+        JSON string for .mcp.json file or None if MCP is disabled
+    """
+    if not config.use_mcp:
+        return None
+    
+    mcp_config = {
+        "mcpServers": {
+            "context7": {
+                "command": "npx",
+                "args": [
+                    "-y",
+                    "@upstash/context7"
+                ],
+                "env": {}
+            }
+        }
+    }
+    
+    return json.dumps(mcp_config, indent=2)
+
+
+def generate_mcp_documentation(config: ProjectConfiguration) -> Optional[str]:
+    """Generate MCP documentation content.
+    
+    Args:
+        config: Project configuration
+        
+    Returns:
+        MCP documentation string or None if MCP is disabled
+    """
+    if not config.use_mcp:
+        return None
+    
+    return f"""
+## Model Context Protocol (MCP) Configuration
+
+This project includes MCP (Model Context Protocol) integration using Context7 by Upstash for enhanced AI-assisted development.
+
+### What is MCP?
+
+MCP enables AI assistants to provide more intelligent, context-aware assistance by automatically understanding your project structure, codebase, and development patterns.
+
+### Context7 Features
+
+- **Intelligent Context Management**: Automatically provides relevant project context to AI assistants
+- **Smart File Discovery**: Identifies and surfaces important project files and documentation  
+- **Project Understanding**: Analyzes project structure and provides contextual information
+- **Technology Stack Awareness**: Understands your project's technology choices and conventions
+- **Codebase Navigation**: Helps AI assistants navigate and understand the project structure
+
+### Setup Instructions
+
+1. **Claude Desktop Integration**: 
+   The `.mcp.json` file in your project root configures Context7 for Claude Desktop.
+
+2. **Installation**: 
+   Context7 will be automatically installed when Claude Desktop connects to your project.
+
+3. **Usage**:
+   - Open your project in Claude Desktop
+   - Context7 will automatically analyze your project structure
+   - AI assistance will become more accurate and contextual
+
+### Configuration File
+
+The `.mcp.json` file contains the Context7 server configuration:
+
+```json
+{{
+  "mcpServers": {{
+    "context7": {{
+      "command": "npx",
+      "args": [
+        "-y", 
+        "@upstash/context7"
+      ],
+      "env": {{}}
+    }}
+  }}
+}}
+```
+
+### Enhanced Development Workflow
+
+With Context7 MCP integration:
+- AI assistants understand your project structure and conventions
+- Code suggestions are more relevant to your specific codebase
+- Documentation and explanations consider your technology stack
+- Development questions receive context-aware responses
+
+For more information about Context7, visit: https://github.com/upstash/context7
+"""

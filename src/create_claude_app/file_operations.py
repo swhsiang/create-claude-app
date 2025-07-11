@@ -1,9 +1,10 @@
 """File operations and project structure management."""
+import json
 import os
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 
 class FileOperationError(Exception):
@@ -139,6 +140,40 @@ def copy_template_file(template_path: str, dest_path: str) -> None:
         
     except OSError as e:
         raise FileOperationError(f"Failed to copy template file: {e}")
+
+
+def write_mcp_config_file(project_path: str, mcp_config: Optional[Dict[str, Any]]) -> Optional[str]:
+    """Write MCP configuration file to project directory.
+    
+    Args:
+        project_path: Path to the project root directory
+        mcp_config: MCP configuration dictionary or None to skip creation
+        
+    Returns:
+        Path to created .mcp.json file or None if config was None
+        
+    Raises:
+        FileOperationError: If file operation fails
+    """
+    if mcp_config is None:
+        return None
+    
+    project_path_obj = Path(project_path)
+    mcp_file_path = project_path_obj / '.mcp.json'
+    
+    try:
+        # Ensure project directory exists
+        if not project_path_obj.exists():
+            raise FileOperationError(f"Project directory does not exist: {project_path}")
+        
+        # Write MCP configuration as JSON
+        mcp_content = json.dumps(mcp_config, indent=2)
+        write_file_safe(str(mcp_file_path), mcp_content)
+        
+        return str(mcp_file_path)
+        
+    except (OSError, ValueError, TypeError) as e:
+        raise FileOperationError(f"Failed to write MCP configuration: {e}")
 
 
 def cleanup_on_error(created_paths: List[str]) -> None:

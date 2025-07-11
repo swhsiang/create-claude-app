@@ -71,6 +71,14 @@ The tool will prompt users to select components with **single choice per categor
 - Generates CI/CD workflow files based on selected technology stack
 - Provides comprehensive workflow templates for testing, building, and deployment
 
+### Model Context Protocol (MCP) Integration
+- Prompt: "Would you like to include MCP (Model Context Protocol) configuration? (Y/n)"
+- Default: Yes (recommended)
+- **Conditional Generation**: `.mcp.json` file is only generated if user selects "Yes"
+- If disabled: No MCP-related files or documentation are generated
+- Provides project-specific context and tooling configuration for Claude Code and other AI assistants
+- Enhances AI-assisted development workflow with project-aware context
+
 ## Project Structure
 
 ### Root Level Structure
@@ -79,6 +87,7 @@ The tool will prompt users to select components with **single choice per categor
 ├── README.md
 ├── CLAUDE.md              # Main project documentation
 ├── .env.example           # Environment variables template
+├── .mcp.json              # Model Context Protocol configuration (only if MCP enabled)
 ├── .gitignore
 ├── package.json           # (optional) For root-level npm scripts, workspaces
 ├── requirements.txt       # Project Python dependencies
@@ -215,6 +224,11 @@ Each subfolder with code will have its own CLAUDE.md containing:
   - Development environment: `docker-compose -f infra/docker/docker-compose.dev.yml up`
   - Stop services: `docker-compose -f infra/docker/docker-compose.yml down`
   - Rebuild containers: `docker-compose -f infra/docker/docker-compose.yml up --build`
+- **MCP Integration** (if MCP selected)
+  - Context7 MCP server configuration in `.mcp.json`
+  - Claude Desktop integration setup instructions
+  - Context7 installation and usage guidelines
+  - Enhanced AI-assisted development workflow with intelligent context
 - **Build and Deployment**
   - Production build commands
   - Environment-specific configurations
@@ -408,6 +422,47 @@ The tool automatically generates Docker infrastructure for all projects, creatin
 - **Docker optimization sections**: Brief optimization notes added to backend README.md and CLAUDE.md
 - **Development workflow**: Instructions for using Docker in development
 - **Environment management**: Guide for switching between dev/staging/prod environments
+
+## Model Context Protocol (MCP) Configuration
+
+### MCP Integration (Recommended Feature)
+The tool optionally generates Model Context Protocol configuration to enhance AI-assisted development workflows with project-aware context and tooling.
+
+#### MCP Configuration Structure
+```json
+{
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7"
+      ],
+      "env": {}
+    }
+  }
+}
+```
+
+**Context7 MCP Server Features:**
+- **Intelligent Context Management**: Automatically provides relevant project context to AI assistants
+- **Smart File Discovery**: Identifies and surfaces important project files and documentation
+- **Project Understanding**: Analyzes project structure and provides contextual information
+- **Technology Stack Awareness**: Understands the project's technology choices and conventions
+- **Codebase Navigation**: Helps AI assistants navigate and understand the project structure
+
+#### MCP Features
+- **Intelligent Context**: Context7 automatically provides relevant project information to AI assistants
+- **Smart Project Analysis**: Understands project structure, technology stack, and conventions
+- **Enhanced AI Assistance**: Enables AI assistants to provide more accurate and contextual help
+- **Claude Desktop Integration**: Seamless integration with Claude Desktop and other MCP-compatible clients
+- **Zero Configuration**: Works out-of-the-box with minimal setup required
+
+#### Generated MCP Documentation
+- **Context7 setup instructions**: Added to main CLAUDE.md file with Claude Desktop configuration
+- **Installation guide**: Step-by-step setup for Context7 MCP server
+- **Usage guidelines**: How to leverage Context7 for enhanced AI assistance
+- **Development workflow**: Best practices for AI-assisted development with Context7
 
 ## Technical Requirements
 

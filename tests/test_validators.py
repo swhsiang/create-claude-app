@@ -7,6 +7,7 @@ from create_claude_app.validators import (
     validate_project_name,
     validate_directory_not_exists,
     validate_compatibility,
+    validate_mcp_configuration,
     sanitize_input,
     ValidationError,
 )
@@ -160,3 +161,52 @@ class TestValidators:
         error = ValidationError("Test error", details="Additional info")
         assert str(error) == "Test error"
         assert error.details == "Additional info"
+
+    def test_validate_mcp_configuration_valid(self):
+        """Test valid MCP configuration validation."""
+        # Valid boolean values
+        validate_mcp_configuration(True)  # Should not raise
+        validate_mcp_configuration(False)  # Should not raise
+
+    def test_validate_mcp_configuration_invalid(self):
+        """Test invalid MCP configuration validation."""
+        invalid_values = [
+            "true",  # String instead of bool
+            "false", # String instead of bool
+            1,       # Integer instead of bool
+            0,       # Integer instead of bool
+            None,    # None instead of bool
+            "yes",   # String
+            "no",    # String
+        ]
+        
+        for value in invalid_values:
+            with pytest.raises(ValidationError) as exc_info:
+                validate_mcp_configuration(value)
+            assert 'MCP configuration must be a boolean value' in str(exc_info.value)
+
+    def test_validate_mcp_configuration_with_project_name(self):
+        """Test MCP configuration validation with project context."""
+        # Should work with any valid boolean regardless of project name
+        validate_mcp_configuration(True, project_name="test-project")
+        validate_mcp_configuration(False, project_name="another-project")
+
+    def test_validate_compatibility_with_mcp_combinations(self):
+        """Test that MCP works with all frontend/backend combinations."""
+        # MCP should be compatible with any technology stack
+        combinations = [
+            ('react', 'tailwind', 'python', True),
+            ('vue', 'tailwind', 'nodejs', True),
+            ('angular', None, 'golang', True),
+            (None, None, None, True),
+            ('react', 'shadcn', 'python', False),
+            (None, None, None, False),
+        ]
+        
+        for frontend, ui_framework, backend, use_mcp in combinations:
+            # Validate base compatibility first
+            if frontend is not None or ui_framework is not None:
+                validate_compatibility(frontend, ui_framework)
+            
+            # MCP should not affect compatibility
+            validate_mcp_configuration(use_mcp)

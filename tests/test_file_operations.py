@@ -9,6 +9,7 @@ from create_claude_app.file_operations import (
     write_file_safe,
     copy_template_file,
     cleanup_on_error,
+    write_mcp_config_file,
     FileOperationError,
     ProjectStructure,
 )
@@ -250,3 +251,69 @@ class TestFileOperations:
         error = FileOperationError("Test error", path="/test/path")
         assert str(error) == "Test error"
         assert error.path == "/test/path"
+
+    def test_write_mcp_config_file_success(self):
+        """Test successful MCP configuration file writing."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project_path = Path(temp_dir) / 'mcp-project'
+            project_path.mkdir()
+            
+            mcp_config = {
+                "mcpServers": {
+                    "context7": {
+                        "command": "npx",
+                        "args": ["-y", "@upstash/context7"],
+                        "env": {}
+                    }
+                }
+            }
+            
+            file_path = write_mcp_config_file(str(project_path), mcp_config)
+            
+            # Check that file was created
+            mcp_file = project_path / '.mcp.json'
+            assert mcp_file.exists()
+            assert file_path == str(mcp_file)
+            
+            # Check content
+            import json
+            content = json.loads(mcp_file.read_text())
+            assert content == mcp_config
+
+    def test_write_mcp_config_file_with_none_config(self):
+        """Test MCP config file writing with None config (should not create file)."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project_path = Path(temp_dir) / 'no-mcp-project'
+            project_path.mkdir()
+            
+            file_path = write_mcp_config_file(str(project_path), None)
+            
+            # Check that no file was created
+            mcp_file = project_path / '.mcp.json'
+            assert not mcp_file.exists()
+            assert file_path is None
+
+    def test_write_mcp_config_file_invalid_path(self):
+        """Test MCP config file writing with invalid project path."""
+        nonexistent_path = "/nonexistent/path"
+        mcp_config = {"mcpServers": {}}
+        
+        with pytest.raises(FileOperationError) as exc_info:
+            write_mcp_config_file(nonexistent_path, mcp_config)
+        
+        assert 'Project directory does not exist' in str(exc_info.value)
+
+    def test_write_mcp_config_file_invalid_json(self):
+        """Test MCP config file writing with invalid JSON data."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project_path = Path(temp_dir) / 'invalid-json-project'
+            project_path.mkdir()
+            
+            # Create invalid JSON data (circular reference)
+            invalid_config = {}
+            invalid_config['self'] = invalid_config
+            
+            with pytest.raises(FileOperationError) as exc_info:
+                write_mcp_config_file(str(project_path), invalid_config)
+            
+            assert 'Failed to write MCP configuration' in str(exc_info.value)

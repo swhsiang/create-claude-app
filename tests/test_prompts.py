@@ -10,6 +10,7 @@ from create_claude_app.prompts import (
     get_atlas_choice,
     get_build_tool_choice,
     get_github_actions_choice,
+    get_mcp_choice,
     ProjectConfiguration,
 )
 
@@ -137,7 +138,8 @@ class TestPrompts:
             package_manager='npm',
             use_atlas=True,
             build_tool='vite',
-            use_github_actions=True
+            use_github_actions=True,
+            use_mcp=True
         )
         
         assert config.project_name == 'test-project'
@@ -149,6 +151,7 @@ class TestPrompts:
         assert config.use_atlas is True
         assert config.build_tool == 'vite'
         assert config.use_github_actions is True
+        assert config.use_mcp is True
 
     def test_project_configuration_with_none_values(self):
         """Test ProjectConfiguration with None values (skipped options)."""
@@ -161,7 +164,8 @@ class TestPrompts:
             package_manager=None,
             use_atlas=False,
             build_tool=None,
-            use_github_actions=False
+            use_github_actions=False,
+            use_mcp=False
         )
         
         assert config.project_name == 'test-project'
@@ -173,6 +177,7 @@ class TestPrompts:
         assert config.use_atlas is False
         assert config.build_tool is None
         assert config.use_github_actions is False
+        assert config.use_mcp is False
 
     def test_get_build_tool_choice_valid_options(self):
         """Test build tool selection with valid options."""
@@ -211,3 +216,37 @@ class TestPrompts:
             mock_ask.return_value = True  # Default should be True
             result = get_github_actions_choice()
             assert result is True
+
+    def test_get_mcp_choice_valid_options(self):
+        """Test MCP configuration selection with valid options."""
+        with patch('rich.prompt.Confirm.ask') as mock_ask:
+            mock_ask.return_value = True
+            result = get_mcp_choice()
+            assert result is True
+            
+            mock_ask.return_value = False
+            result = get_mcp_choice()
+            assert result is False
+
+    def test_get_mcp_choice_default_yes(self):
+        """Test MCP configuration selection defaults to yes (recommended)."""
+        with patch('rich.prompt.Confirm.ask') as mock_ask:
+            mock_ask.return_value = True  # Default should be True (recommended)
+            result = get_mcp_choice()
+            assert result is True
+
+    def test_get_mcp_choice_prompt_content(self):
+        """Test MCP prompt displays correct content and description."""
+        with patch('rich.prompt.Confirm.ask') as mock_ask, \
+             patch('rich.console.Console.print') as mock_print:
+            
+            mock_ask.return_value = True
+            result = get_mcp_choice()
+            
+            # Should call print for explanation
+            mock_print.assert_called()
+            
+            # Check that Context7 is mentioned in the prompt calls
+            mock_ask.assert_called_once()
+            call_args = str(mock_ask.call_args)
+            assert 'MCP' in call_args or 'Context Protocol' in call_args

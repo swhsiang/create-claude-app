@@ -72,6 +72,20 @@ def validate_compatibility(frontend: Optional[str], ui_framework: Optional[str])
         raise ValidationError(f"shadcn/ui is incompatible with {frontend} (React-only)")
 
 
+def validate_mcp_configuration(use_mcp, project_name: Optional[str] = None) -> None:
+    """Validate MCP configuration value.
+    
+    Args:
+        use_mcp: MCP configuration value to validate
+        project_name: Optional project name for context
+        
+    Raises:
+        ValidationError: If MCP configuration is invalid
+    """
+    if not isinstance(use_mcp, bool):
+        raise ValidationError("MCP configuration must be a boolean value (True or False)")
+
+
 def sanitize_input(input_val: Optional[str]) -> Optional[str]:
     """Sanitize user input by trimming whitespace and normalizing.
     

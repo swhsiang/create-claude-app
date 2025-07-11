@@ -28,7 +28,8 @@ class TestIntegration:
                     '4',  # Skip backend  
                     '4',  # Skip database
                     'n',  # No Atlas
-                    'n'   # No GitHub Actions
+                    'n',  # No GitHub Actions
+                    'n'   # No MCP
                 ]
                 
                 result = runner.invoke(main, ['minimal-project'], input='\n'.join(inputs))
@@ -74,7 +75,8 @@ class TestIntegration:
                     '2',  # PostgreSQL
                     '1',  # npm
                     'y',  # Yes to Atlas
-                    'y'   # Yes to GitHub Actions
+                    'y',  # Yes to GitHub Actions
+                    'y'   # Yes to MCP
                 ]
                 
                 result = runner.invoke(main, ['fullstack-app'], input='\n'.join(inputs))
@@ -178,7 +180,8 @@ class TestIntegration:
                     '4',  # Skip backend
                     '4',  # Skip database
                     'n',  # No Atlas
-                    'n'   # No GitHub Actions
+                    'n',  # No GitHub Actions
+                    'n'   # No MCP (won't be reached due to validation failure)
                 ]
                 
                 result = runner.invoke(main, ['angular-app'], input='\n'.join(inputs))
@@ -214,7 +217,8 @@ class TestIntegration:
                     '1',  # MySQL
                     '2',  # yarn
                     'y',  # Yes to Atlas
-                    'y'   # Yes to GitHub Actions
+                    'y',  # Yes to GitHub Actions
+                    'y'   # Yes to MCP
                 ]
                 
                 result = runner.invoke(main, ['feature-rich-app'], input='\n'.join(inputs))
