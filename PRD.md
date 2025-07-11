@@ -11,15 +11,79 @@
 - Distribute as a PyPI package for easy installation
 
 ## Installation & Usage
+
+### Basic Installation
 ```bash
 # Install via pip
 pip install create-claude-app
 
 # Install via homebrew (future)
 brew install create-claude-app
+```
 
-# Usage
+### Usage Options
+
+#### Interactive Mode (Default)
+```bash
+# Interactive prompts for all options
 create-claude-app my-new-project
+```
+
+#### CLI Arguments Mode (Non-Interactive)
+```bash
+# Specify all options via command line flags
+create-claude-app my-project --frontend react --backend python --database mysql
+
+# Mix of flags and defaults
+create-claude-app my-project --frontend vue --ui tailwind
+
+# Use short flags
+create-claude-app my-project -f react -B python -d postgresql
+```
+
+### Available CLI Arguments
+
+| Flag | Short | Options | Default | Description |
+|------|-------|---------|---------|-------------|
+| `--frontend` | `-f` | `react`, `vue`, `angular`, `none` | `none` | Frontend framework |
+| `--ui` | `-u` | `tailwind`, `shadcn`, `none` | `none` | UI framework |
+| `--build-tool` | `-b` | `vite`, `webpack`, `babel` | `vite` | Frontend build tool |
+| `--backend` | `-B` | `python`, `nodejs`, `golang`, `none` | `none` | Backend language |
+| `--database` | `-d` | `mysql`, `postgresql`, `sqlite`, `none` | `none` | Database system |
+| `--package-manager` | `-p` | `npm`, `yarn` | `npm` | Package manager |
+| `--atlas` | `-a` | flag | `false` | Enable Atlas migrations |
+| `--github-actions` | `-g` | flag | `false` | Enable GitHub Actions |
+| `--mcp` | `-m` | flag | `true` | Enable MCP integration |
+
+### CLI Argument Behavior
+
+**Validation**: 
+- Invalid combinations (e.g., `--frontend angular --ui shadcn`) will immediately error with clear messages
+- Unknown values will show available options and exit
+
+**Mixed Mode**: 
+- CLI args override interactive prompts
+- Missing options use defaults (no prompting)
+- Maintains backward compatibility
+
+**Help Documentation**:
+```bash
+create-claude-app --help
+# Shows all available options with valid values
+```
+
+### Error Examples
+```bash
+# Invalid combination
+$ create-claude-app test --frontend angular --ui shadcn
+Error: Incompatible combination detected.
+Angular frontend is not compatible with shadcn/ui framework.
+Valid UI options for Angular: tailwind, none
+
+# Invalid value
+$ create-claude-app test --frontend react-native
+Error: Invalid frontend option 'react-native'.
+Valid options: react, vue, angular, none
 ```
 
 ## Interactive Component Selection

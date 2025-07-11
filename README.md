@@ -6,6 +6,7 @@ Interactive Python CLI tool that scaffolds new projects optimized for Claude Cod
 
 - 🚀 **Quick Project Setup**: Bootstrap new projects in under 2 minutes
 - 🎯 **Interactive Selection**: Choose from multiple frontend, backend, and database options
+- 💻 **CLI Arguments**: Non-interactive mode with full command-line argument support
 - 📋 **Comprehensive Documentation**: Auto-generated CLAUDE.md files for effective AI-assisted development
 - 🏗️ **Clean Architecture**: Industry best practices with Domain-Driven Design patterns
 - 🔧 **Multiple Tech Stacks**: Support for React, Vue, Angular, Python, Node.js, Golang, and more
@@ -17,6 +18,7 @@ Interactive Python CLI tool that scaffolds new projects optimized for Claude Cod
 - 📚 **Enhanced README**: Detailed setup, development, and deployment instructions
 - 🐳 **Docker Infrastructure**: Complete containerization with multi-stage builds and environment-specific configurations
 - 🏗️ **Docker Compose**: Development, staging, and production docker-compose files with optimized configurations
+- 🔌 **MCP Integration**: Model Context Protocol support with Context7 for enhanced AI-assisted development
 
 ## Installation
 
@@ -31,11 +33,65 @@ brew install create-claude-app
 
 ## Usage
 
+### Interactive Mode (Default)
+
 ```bash
-# Create a new project
+# Create a new project with interactive prompts
 create-claude-app my-new-project
 
 # Follow the interactive prompts to select your tech stack
+```
+
+### CLI Arguments Mode (Non-Interactive)
+
+```bash
+# Create a project with all options specified via command line
+create-claude-app my-project --frontend react --backend python --database mysql
+
+# Mixed mode - some CLI args with defaults for missing options
+create-claude-app my-project --frontend vue --ui tailwind
+
+# Use short flags for faster typing
+create-claude-app my-project -f react -B python -d postgresql
+```
+
+### Available CLI Arguments
+
+| Flag | Short | Options | Default | Description |
+|------|-------|---------|---------|-------------|
+| `--frontend` | `-f` | `react`, `vue`, `angular`, `none` | `none` | Frontend framework |
+| `--backend` | `-B` | `python`, `nodejs`, `golang`, `none` | `none` | Backend language |
+| `--database` | `-d` | `mysql`, `postgresql`, `sqlite`, `none` | `none` | Database system |
+| `--ui` | `-u` | `tailwind`, `shadcn`, `none` | `none` | UI framework |
+| `--build-tool` | `-b` | `vite`, `webpack`, `babel` | `vite` | Frontend build tool |
+| `--package-manager` | `-p` | `npm`, `yarn` | `npm` | Package manager |
+| `--atlas` | `-a` | flag | `false` | Enable Atlas migrations |
+| `--github-actions` | `-g` | flag | `false` | Enable GitHub Actions |
+| `--mcp` | `-m` | flag | `true` | Enable MCP integration |
+
+### CLI Examples
+
+```bash
+# Full stack application with all features
+create-claude-app my-app \
+  --frontend react \
+  --ui shadcn \
+  --build-tool vite \
+  --backend python \
+  --database postgresql \
+  --package-manager yarn \
+  --atlas \
+  --github-actions
+
+# Minimal project with just frontend
+create-claude-app simple-app --frontend vue --ui tailwind
+
+# Backend-only API
+create-claude-app api-server --backend python --database mysql --atlas
+
+# Help and version information
+create-claude-app --help
+create-claude-app --version
 ```
 
 ## Interactive Component Selection
@@ -74,7 +130,8 @@ The tool will guide you through selecting components for your project:
 - Atlas migration tool (recommended)
 - Package manager selection (npm, yarn)
 - GitHub Actions CI/CD workflows (recommended)
-- Docker infrastructure generation (recommended)
+- Docker infrastructure generation (automatic)
+- Model Context Protocol (MCP) integration with Context7 (recommended)
 - Comprehensive project documentation generation
 
 ## Generated Project Structure
@@ -85,6 +142,7 @@ my-project/
 ├── README.md              # Comprehensive project documentation
 ├── CLAUDE.md              # Main project documentation
 ├── .env.example           # Environment variables template
+├── .mcp.json              # Model Context Protocol configuration (if enabled)
 ├── .gitignore
 ├── package.json           # Root-level npm scripts, workspaces
 ├── requirements.txt       # Project Python dependencies
@@ -143,6 +201,7 @@ Each generated project includes comprehensive CLAUDE.md files containing:
 - **Build and Deployment Instructions**
 - **CI/CD Pipeline Documentation** (if GitHub Actions selected)
 - **Docker Commands and Infrastructure** (complete containerization guide)
+- **MCP Integration Guide** (if Context7 MCP enabled)
 - **AI API Keys Setup** (ANTHROPIC_API_KEY, OPENAI_API_KEY, GEMINI_API_KEY)
 
 ## Environment Variables
@@ -208,13 +267,20 @@ MIT License - see LICENSE file for details
 
 ## Roadmap
 
-### ✅ Recently Completed (v0.3.0)
+### ✅ Recently Completed (v0.4.0)
+- **CLI Arguments**: Complete non-interactive mode with all project options
+- **Mixed Mode Support**: Partial CLI args with intelligent defaults
+- **Enhanced Validation**: CLI argument compatibility checking
+- **Backward Compatibility**: Maintained interactive mode when no args provided
+- **Comprehensive Help**: Detailed CLI documentation with all valid options
+
+### ✅ Previous Features (v0.3.0)
 - **Docker Infrastructure**: Complete containerization with multi-stage builds
 - **Environment-Specific Configurations**: dev, staging, prod docker-compose files
-- **Docker Optimization**: Security best practices, health checks, resource limits
-- **Enhanced README with Docker**: Complete Docker commands and infrastructure guide
+- **MCP Integration**: Model Context Protocol support with Context7
+- **Enhanced Documentation**: MCP setup and integration guides
 
-### ✅ Previous Features (v0.2.0)
+### ✅ Features (v0.2.0)
 - **Frontend Build Tools**: Vite, Webpack, Babel + Webpack support
 - **GitHub Actions CI/CD**: Comprehensive workflow generation
 - **Framework Entry Points**: React, Vue, Angular, Python entry files
@@ -230,3 +296,4 @@ MIT License - see LICENSE file for details
 - **IDE Configuration Files**: VS Code, JetBrains settings
 - **Deployment Templates**: Vercel, Netlify, AWS, GCP configurations
 - **Kubernetes Support**: Helm charts and k8s manifests
+- **Advanced MCP Features**: Custom server configurations and additional MCP servers

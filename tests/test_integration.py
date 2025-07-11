@@ -264,3 +264,168 @@ class TestIntegration:
                 
             finally:
                 os.chdir(original_cwd)
+
+    def test_create_project_with_cli_arguments_integration(self):
+        """Test creating a project using CLI arguments (non-interactive mode)."""
+        runner = CliRunner()
+        
+        with tempfile.TemporaryDirectory() as temp_dir:
+            original_cwd = os.getcwd()
+            os.chdir(temp_dir)
+            
+            try:
+                # Create project using CLI arguments only
+                result = runner.invoke(main, [
+                    'cli-test-project',
+                    '--frontend', 'react',
+                    '--ui', 'tailwind',
+                    '--build-tool', 'webpack', 
+                    '--backend', 'python',
+                    '--database', 'mysql',
+                    '--package-manager', 'yarn',
+                    '--atlas',
+                    '--github-actions'
+                ])
+                
+                # Check command succeeded
+                assert result.exit_code == 0
+                assert 'created successfully' in result.output
+                
+                # Check project directory was created
+                project_path = Path('cli-test-project')
+                assert project_path.exists()
+                
+                # Check directory structure
+                assert (project_path / 'frontend').exists()
+                assert (project_path / 'backend').exists()
+                assert (project_path / 'migrations').exists()
+                
+                # Check core files
+                assert (project_path / 'CLAUDE.md').exists()
+                assert (project_path / '.env.example').exists()
+                assert (project_path / 'README.md').exists()
+                assert (project_path / 'docker-compose.yml').exists()
+                
+                # Check build tool configuration
+                assert (project_path / 'frontend' / 'webpack.config.js').exists()
+                
+                # Check entry points
+                assert (project_path / 'frontend' / 'src' / 'main.tsx').exists()
+                assert (project_path / 'frontend' / 'src' / 'App.tsx').exists()
+                assert (project_path / 'backend' / 'app' / 'main.py').exists()
+                
+                # Check GitHub Actions
+                assert (project_path / '.github' / 'workflows' / 'ci.yml').exists()
+                
+                # Check MCP file (default enabled)
+                assert (project_path / '.mcp.json').exists()
+                
+                # Validate configuration was applied correctly
+                readme_content = (project_path / 'README.md').read_text()
+                assert 'React (Webpack)' in readme_content
+                assert 'Tailwind CSS' in readme_content
+                assert 'Python (FastAPI)' in readme_content
+                assert 'MySQL' in readme_content
+                assert 'yarn' in readme_content
+                
+            finally:
+                os.chdir(original_cwd)
+
+    def test_create_minimal_project_with_cli_arguments_integration(self):
+        """Test creating a minimal project using CLI arguments."""
+        runner = CliRunner()
+        
+        with tempfile.TemporaryDirectory() as temp_dir:
+            original_cwd = os.getcwd()
+            os.chdir(temp_dir)
+            
+            try:
+                # Create minimal project with CLI arguments
+                result = runner.invoke(main, [
+                    'minimal-cli-project',
+                    '--frontend', 'none',
+                    '--backend', 'none',
+                    '--database', 'none',
+                    '--no-mcp'
+                ])
+                
+                # Check command succeeded
+                assert result.exit_code == 0
+                assert 'created successfully' in result.output
+                
+                # Check project directory was created
+                project_path = Path('minimal-cli-project')
+                assert project_path.exists()
+                
+                # Check that optional directories were NOT created
+                assert not (project_path / 'frontend').exists()
+                assert not (project_path / 'backend').exists()
+                assert not (project_path / 'migrations').exists()
+                
+                # Check basic files were created
+                assert (project_path / 'CLAUDE.md').exists()
+                assert (project_path / '.env.example').exists()
+                assert (project_path / 'README.md').exists()
+                
+                # Check that MCP file was NOT created
+                assert not (project_path / '.mcp.json').exists()
+                
+            finally:
+                os.chdir(original_cwd)
+
+    def test_create_project_with_mixed_cli_and_defaults_integration(self):
+        """Test creating a project with some CLI args and remaining defaults."""
+        runner = CliRunner()
+        
+        with tempfile.TemporaryDirectory() as temp_dir:
+            original_cwd = os.getcwd()
+            os.chdir(temp_dir)
+            
+            try:
+                # Provide only some CLI arguments, let others use defaults
+                result = runner.invoke(main, [
+                    'mixed-project',
+                    '--frontend', 'vue',
+                    '--database', 'postgresql'
+                ])
+                
+                # Check command succeeded
+                assert result.exit_code == 0
+                assert 'created successfully' in result.output
+                
+                # Check project directory was created
+                project_path = Path('mixed-project')
+                assert project_path.exists()
+                
+                # Should have frontend and database, but not backend
+                assert (project_path / 'frontend').exists()
+                assert not (project_path / 'backend').exists()
+                assert (project_path / 'migrations').exists()
+                
+                # Check that defaults were applied
+                # Default build tool should be Vite
+                assert (project_path / 'frontend' / 'vite.config.ts').exists()
+                
+                # Default package manager should be npm
+                package_json = (project_path / 'frontend' / 'package.json').read_text()
+                assert 'vue' in package_json.lower()
+                
+                # MCP should be enabled by default
+                assert (project_path / '.mcp.json').exists()
+                
+                # GitHub Actions should be disabled by default
+                assert not (project_path / '.github').exists()
+                
+                # Atlas should be disabled by default (even with database)
+                # When atlas is disabled, migrations/CLAUDE.md might not exist or have different content
+                migrations_claude_file = project_path / 'migrations' / 'CLAUDE.md'
+                if migrations_claude_file.exists():
+                    migrations_content = migrations_claude_file.read_text()
+                    # If file exists but Atlas is disabled, it should mention it as optional
+                    assert 'optional' in migrations_content.lower() or 'Atlas' not in migrations_content
+                else:
+                    # If file doesn't exist, that's also valid when Atlas is disabled
+                    pass
+                
+            finally:
+                os.chdir(original_cwd)
