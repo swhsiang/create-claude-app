@@ -667,7 +667,7 @@ class TestDockerInfrastructureGeneration:
             
             # Check that files were created
             assert len(files_created) > 0
-            assert any('infra/docker' in f for f in files_created)
+            assert any(str(Path('infra') / 'docker') in f for f in files_created)
 
     def test_generate_frontend_dockerfile_vite(self):
         """Test generating frontend Dockerfile for Vite build tool."""
