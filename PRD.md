@@ -61,6 +61,11 @@ The tool will prompt users to select components with **single choice per categor
 - ( ) npx  
 - ( ) yarn
 
+### Frontend Build Tool Options (if frontend selected)
+- ( ) Vite (recommended)
+- ( ) Webpack
+- ( ) Babel + Webpack
+
 ### GitHub Actions CI/CD
 - Prompt: "Would you like to include GitHub Actions workflows? (Y/n)"
 - Default: Yes
@@ -163,7 +168,7 @@ migrations/
 - **Project Architecture Overview**
 - **Contributing Guidelines**
 
-### Component-Specific CLAUDE.md Files
+### Component-Specific Documentation
 Each subfolder with code will have its own CLAUDE.md containing:
 - **Component Overview**
 - **Local Development Commands**
@@ -171,6 +176,28 @@ Each subfolder with code will have its own CLAUDE.md containing:
 - **Coding Standards**
 - **Testing Guidelines**
 - **Common Tasks**
+
+### README.md Content Structure
+**Root README.md:**
+- **Quick Start Guide** with immediate setup steps
+- **Technology Stack Overview** with chosen frameworks
+- **Development Setup Instructions**
+  - Prerequisites installation
+  - Environment variables setup
+  - Database setup (if applicable)
+  - Dependency installation commands
+- **Development Commands**
+  - Frontend: Start development server with chosen build tool (Vite/Webpack/Babel)
+  - Backend: Start server with framework-specific commands
+  - Database: Migration and seeding commands
+  - Testing: Unit and integration test commands
+- **Build and Deployment**
+  - Production build commands
+  - Environment-specific configurations
+  - Deployment instructions
+- **Project Structure** overview
+- **Contributing Guidelines**
+- **License and Links**
 
 ## Environment Variables Configuration
 
@@ -205,9 +232,12 @@ PORT=8000
 ## Technology Stack Templates
 
 ### Frontend Templates
-- **React**: TypeScript, modern hooks, component structure
-- **Vue**: Vue 3 with Composition API, TypeScript
-- **Angular**: Latest Angular with TypeScript
+- **React**: TypeScript, modern hooks, component structure with chosen build tool
+  - Vite: Fast HMR, optimized builds, modern ESM
+  - Webpack: Traditional bundling with extensive configuration
+  - Babel + Webpack: Custom transpilation with webpack bundling
+- **Vue**: Vue 3 with Composition API, TypeScript, Vite setup
+- **Angular**: Latest Angular with TypeScript, Angular CLI
 
 ### UI Framework Integration
 - **Tailwind CSS**: Complete setup with configuration files, utility classes
@@ -215,8 +245,17 @@ PORT=8000
 
 ### Backend Templates
 - **Python**: FastAPI with DDD/Service Layer architecture
+  - Entry point: `app/main.py`
+  - Development: `uvicorn app.main:app --reload`
+  - Production: `uvicorn app.main:app --host 0.0.0.0 --port 8000`
 - **Node.js**: Express.js with TypeScript, layered architecture
+  - Entry point: `src/server.ts` or `src/app.js`
+  - Development: `npm run dev` (nodemon) or `yarn dev`
+  - Production: `npm start` or `yarn start`
 - **Golang**: Gin framework with clean architecture
+  - Entry point: `main.go`
+  - Development: `go run main.go` or `air` for hot reload
+  - Production: `go build && ./app-name`
 
 ### Database Integration
 - **Docker Compose**: Service definitions for selected databases
@@ -231,10 +270,31 @@ PORT=8000
 ### Basic Starter Files
 - Generate minimal, functional starter files
 - Include basic configuration (package.json, requirements.txt, etc.)
-- Provide working entry points (main.py, App.tsx, etc.)
+- Provide working entry points with clear development instructions
 - Include essential folder structure
 - Create .env.example with default fields
 - Use version ranges for dependencies (not exact pins)
+- Generate README.md with comprehensive development setup instructions
+
+### Entry Points and Development Instructions
+**Frontend Entry Points:**
+- React: `src/main.tsx` or `src/index.tsx` with chosen build tool
+- Vue: `src/main.ts` with Vue 3 Composition API
+- Angular: `src/main.ts` with Angular CLI structure
+
+**Backend Entry Points:**
+- Python: `app/main.py` with FastAPI/Flask application
+- Node.js: `src/server.ts` or `src/app.js` with Express setup
+- Golang: `main.go` with Gin/Echo framework setup
+
+**README.md Development Instructions:**
+- Step-by-step setup process
+- Environment variable configuration
+- Database setup commands (if applicable)
+- Frontend development server commands with chosen build tool
+- Backend development server commands with framework-specific instructions
+- Testing commands for both frontend and backend
+- Build and deployment instructions
 
 ### UI Framework Setup
 - **Tailwind CSS**: Install dependencies, create config files, add sample components
