@@ -72,11 +72,26 @@ tests/
 - Test all user interaction paths
 
 ### Development Milestones
-1. **Phase 1**: Core CLI infrastructure and basic project structure
-2. **Phase 2**: User interaction prompts and input validation
-3. **Phase 3**: Template generation system
+1. **Phase 1**: Core CLI infrastructure and basic project structure ✅ COMPLETED
+2. **Phase 2**: User interaction prompts and input validation ✅ COMPLETED
+3. **Phase 3**: Input validation and compatibility checking 🔄 IN PROGRESS
 4. **Phase 4**: File operations and error handling
-5. **Phase 5**: Integration testing and package distribution
+5. **Phase 5**: Template generation system
+6. **Phase 6**: Integration testing and package distribution
+
+### Progress Update
+**Completed:**
+- ✅ Project structure setup with src/create_claude_app/
+- ✅ CLI module with Click framework (test coverage: 100%)
+- ✅ Prompts module with Rich library (test coverage: 99%)
+- ✅ ProjectConfiguration dataclass
+- ✅ Package configuration (pyproject.toml, requirements)
+- ✅ Comprehensive test suite with pytest
+
+**Next Steps:**
+- 🔄 Implement validators module with TDD
+- 🔄 Implement file operations module with TDD
+- 🔄 Implement template generation system
 
 ### Technology Stack
 - **CLI Framework**: click
@@ -100,6 +115,10 @@ pytest tests/test_cli.py -v
 
 # Run with coverage report
 pytest tests/ --cov=src/create_claude_app --cov-report=html
+
+# Git workflow after each milestone
+git add <files>
+git commit -m "Clear commit message describing changes"
 ```
 
 ### Quality Assurance
@@ -108,3 +127,17 @@ pytest tests/ --cov=src/create_claude_app --cov-report=html
 - Use flake8 for linting
 - Type hints with mypy
 - Pre-commit hooks for code quality
+
+### Git Workflow
+**Important**: After completing each milestone, commit changes with clear messages:
+1. Run tests to ensure everything passes
+2. Add only the files that should be committed (check .gitignore)
+3. Write descriptive commit messages explaining what was implemented
+4. Update CLAUDE.md with progress status
+5. Commit the documentation update separately if needed
+
+### Current Status
+- **Last Commit**: 5d6bdf6 - Implement core CLI and prompts modules with TDD
+- **Files Committed**: CLI module, prompts module, tests, package configuration
+- **Test Coverage**: CLI (100%), Prompts (99%)
+- **Next**: Implement validators module with TDD approach
