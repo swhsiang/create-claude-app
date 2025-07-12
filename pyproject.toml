@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "create-claude-app"
-version = "0.4.0"
+version = "0.4.1"
 description = "Interactive Python CLI tool that scaffolds new projects optimized for Claude Code development"
 readme = "README.md"
 license = {file = "LICENSE"}
