@@ -262,7 +262,7 @@ class TestFileOperations:
                 "mcpServers": {
                     "context7": {
                         "command": "npx",
-                        "args": ["-y", "@upstash/context7"],
+                        "args": ["-y", "@upstash/context7-mcp"],
                         "env": {}
                     }
                 }

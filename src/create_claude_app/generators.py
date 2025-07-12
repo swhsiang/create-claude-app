@@ -2597,7 +2597,7 @@ def generate_mcp_config(config: ProjectConfiguration) -> Optional[str]:
                 "command": "npx",
                 "args": [
                     "-y",
-                    "@upstash/context7"
+                    "@upstash/context7-mcp"
                 ],
                 "env": {}
             }
@@ -2660,7 +2660,7 @@ The `.mcp.json` file contains the Context7 server configuration:
       "command": "npx",
       "args": [
         "-y", 
-        "@upstash/context7"
+        "@upstash/context7-mcp"
       ],
       "env": {{}}
     }}

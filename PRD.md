@@ -500,7 +500,7 @@ The tool optionally generates Model Context Protocol configuration to enhance AI
       "command": "npx",
       "args": [
         "-y",
-        "@upstash/context7"
+        "@upstash/context7-mcp"
       ],
       "env": {}
     }

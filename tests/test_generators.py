@@ -949,7 +949,7 @@ class TestMCPIntegration:
         assert 'context7' in mcp_data['mcpServers']
         assert mcp_data['mcpServers']['context7']['command'] == 'npx'
         assert '-y' in mcp_data['mcpServers']['context7']['args']
-        assert '@upstash/context7' in mcp_data['mcpServers']['context7']['args']
+        assert '@upstash/context7-mcp' in mcp_data['mcpServers']['context7']['args']
         assert 'env' in mcp_data['mcpServers']['context7']
 
     def test_generate_mcp_config_when_disabled(self):
