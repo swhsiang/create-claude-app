@@ -2135,8 +2135,10 @@ def generate_docker_compose_environments(project_path: Path, config: ProjectConf
         dev_script = generate_dev_script(config)
         dev_script_path = project_path / 'dev.sh'
         write_file_safe(str(dev_script_path), dev_script)
-        # Make the script executable
-        os.chmod(str(dev_script_path), os.stat(str(dev_script_path)).st_mode | stat.S_IEXEC)
+        # Make the script executable (only on Unix-like systems)
+        import platform
+        if platform.system() != 'Windows':
+            os.chmod(str(dev_script_path), os.stat(str(dev_script_path)).st_mode | stat.S_IEXEC)
         files_created.append(str(dev_script_path))
     
     return files_created

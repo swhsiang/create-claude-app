@@ -199,10 +199,12 @@ class TestDockerInfrastructureFixes:
                 dev_script_path = project_path / 'dev.sh'
                 assert dev_script_path.exists(), "dev.sh script should be generated"
                 
-                # Check script is executable
+                # Check script is executable (only on Unix-like systems)
                 import stat
-                file_stat = os.stat(str(dev_script_path))
-                assert file_stat.st_mode & stat.S_IEXEC, "dev.sh should be executable"
+                import platform
+                if platform.system() != 'Windows':
+                    file_stat = os.stat(str(dev_script_path))
+                    assert file_stat.st_mode & stat.S_IEXEC, "dev.sh should be executable"
                 
                 # Check script content
                 script_content = dev_script_path.read_text()
