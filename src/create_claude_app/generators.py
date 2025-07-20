@@ -1,5 +1,7 @@
 """Template generation and project scaffolding."""
 import json
+import os
+import stat
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 
@@ -209,15 +211,11 @@ docker-compose up -d
 """
     
     if config.frontend:
-        if config.package_manager:
-            content += f"""# Start frontend development server
+        package_manager = config.package_manager or 'npm'
+        content += f"""# Start frontend development server
 cd frontend
-{config.package_manager} run dev
-"""
-        else:
-            content += """# Start frontend development server
-cd frontend
-npm run dev
+{package_manager} run dev
+# URL: http://localhost:3001
 """
     
     if config.backend == "python":
@@ -463,7 +461,7 @@ pip install -r requirements.txt
 cd frontend
 {build_tool_cmd}
 ```
-- URL: http://localhost:3000
+- URL: http://localhost:3001
 - Hot reload enabled
 - Build tool: {config.build_tool.title() if config.build_tool else 'Default'}
 
@@ -839,7 +837,7 @@ def generate_docker_compose(config: ProjectConfiguration) -> Optional[str]:
     if not config.database:
         return None
     
-    content = "version: '3.8'\n\nservices:\n"
+    content = "services:\n"
     
     if config.database == "postgresql":
         content += """  postgres:
@@ -1256,7 +1254,11 @@ def generate_frontend_entry_points(project_path: Path, config: ProjectConfigurat
     if config.frontend == 'react':
         # Generate index.html
         index_html = generate_react_index_html(config)
-        index_path = public_path / 'index.html'
+        # Vite expects index.html in the root directory, not in public/
+        if config.build_tool == 'vite':
+            index_path = frontend_path / 'index.html'
+        else:
+            index_path = public_path / 'index.html'
         write_file_safe(str(index_path), index_html)
         files_created.append(str(index_path))
         
@@ -1287,7 +1289,11 @@ def generate_frontend_entry_points(project_path: Path, config: ProjectConfigurat
     elif config.frontend == 'vue':
         # Generate Vue entry points
         index_html = generate_vue_index_html(config)
-        index_path = public_path / 'index.html'
+        # Vite expects index.html in the root directory, not in public/
+        if config.build_tool == 'vite':
+            index_path = frontend_path / 'index.html'
+        else:
+            index_path = public_path / 'index.html'
         write_file_safe(str(index_path), index_html)
         files_created.append(str(index_path))
         
@@ -1325,6 +1331,30 @@ def generate_frontend_entry_points(project_path: Path, config: ProjectConfigurat
         app_path.parent.mkdir(parents=True, exist_ok=True)
         write_file_safe(str(app_path), app_component)
         files_created.append(str(app_path))
+    
+    # Generate Tailwind CSS files if using Tailwind
+    if config.ui_framework == 'tailwind':
+        # Generate CSS file
+        if config.frontend == 'vue':
+            css_content = generate_tailwind_css(config, is_vue=True)
+            css_path = src_path / 'style.css'
+        else:
+            css_content = generate_tailwind_css(config)
+            css_path = src_path / 'index.css'
+        write_file_safe(str(css_path), css_content)
+        files_created.append(str(css_path))
+        
+        # Generate tailwind.config.js
+        tailwind_config = generate_tailwind_config(config)
+        tailwind_path = frontend_path / 'tailwind.config.js'
+        write_file_safe(str(tailwind_path), tailwind_config)
+        files_created.append(str(tailwind_path))
+        
+        # Generate postcss.config.js
+        postcss_config = generate_postcss_config(config)
+        postcss_path = frontend_path / 'postcss.config.js'
+        write_file_safe(str(postcss_path), postcss_config)
+        files_created.append(str(postcss_path))
     
     return files_created
 
@@ -1443,7 +1473,8 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({{
   plugins: [react()],
   server: {{
-    port: 3000,
+    port: 3001,
+    host: true,
     open: true,
   }},
   build: {{
@@ -1462,7 +1493,8 @@ import vue from '@vitejs/plugin-vue'
 export default defineConfig({{
   plugins: [vue()],
   server: {{
-    port: 3000,
+    port: 3001,
+    host: true,
     open: true,
   }},
   build: {{
@@ -1682,7 +1714,7 @@ app = FastAPI(
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Frontend URL
+    allow_origins=["http://localhost:3001"],  # Frontend URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -1759,6 +1791,12 @@ def generate_docker_infrastructure(project_path: Path, config: ProjectConfigurat
         dockerfile_path = frontend_docker_path / 'Dockerfile'
         write_file_safe(str(dockerfile_path), frontend_dockerfile)
         files_created.append(str(dockerfile_path))
+        
+        # Generate development Dockerfile
+        frontend_dockerfile_dev = generate_frontend_dockerfile_dev(config)
+        dockerfile_dev_path = frontend_docker_path / 'Dockerfile.dev'
+        write_file_safe(str(dockerfile_dev_path), frontend_dockerfile_dev)
+        files_created.append(str(dockerfile_dev_path))
     
     if config.backend:
         backend_docker_path = infra_path / 'backend'
@@ -1839,6 +1877,43 @@ EXPOSE 80
 
 # Start nginx
 CMD ["nginx", "-g", "daemon off;"]"""
+
+
+def generate_frontend_dockerfile_dev(config: ProjectConfiguration) -> str:
+    """Generate development-specific Dockerfile for frontend.
+    
+    Args:
+        config: Project configuration
+        
+    Returns:
+        Development Dockerfile content as string
+    """
+    if not config.frontend:
+        return ""
+    
+    package_manager = config.package_manager or 'npm'
+    
+    return f"""# Development Dockerfile for {config.frontend.title()}
+FROM node:18-alpine
+WORKDIR /app
+
+# Install build dependencies for native modules
+RUN apk add --no-cache python3 make g++
+
+# Copy package files
+COPY package*.json ./
+
+# Install all dependencies (including devDependencies)
+RUN {package_manager} install
+
+# Copy application code
+COPY . .
+
+# Expose development port
+EXPOSE 3001
+
+# Run development server
+CMD ["{package_manager}", "run", "dev", "--", "--host", "0.0.0.0"]"""
 
 
 def generate_backend_dockerfile(config: ProjectConfiguration) -> str:
@@ -1975,9 +2050,6 @@ ENV POSTGRES_DB={config.project_name.replace('-', '_')}
 ENV POSTGRES_USER=postgres
 ENV POSTGRES_PASSWORD=password
 
-# Copy initialization scripts
-COPY init/ /docker-entrypoint-initdb.d/
-
 # Expose port
 EXPOSE 5432
 
@@ -1994,9 +2066,6 @@ ENV MYSQL_USER=mysql
 ENV MYSQL_PASSWORD=password
 ENV MYSQL_ROOT_PASSWORD=rootpassword
 
-# Copy initialization scripts
-COPY init/ /docker-entrypoint-initdb.d/
-
 # Expose port
 EXPOSE 3306
 
@@ -2012,9 +2081,6 @@ RUN apk --no-cache add sqlite
 
 # Create database directory
 RUN mkdir -p /data
-
-# Copy database files
-COPY database/ /data/
 
 # Set working directory
 WORKDIR /data
@@ -2063,6 +2129,15 @@ def generate_docker_compose_environments(project_path: Path, config: ProjectConf
     prod_path = project_path / 'docker-compose.prod.yml'
     write_file_safe(str(prod_path), prod_compose)
     files_created.append(str(prod_path))
+    
+    # Generate dev.sh script if there are services to run
+    if config.frontend or config.backend or config.database:
+        dev_script = generate_dev_script(config)
+        dev_script_path = project_path / 'dev.sh'
+        write_file_safe(str(dev_script_path), dev_script)
+        # Make the script executable
+        os.chmod(str(dev_script_path), os.stat(str(dev_script_path)).st_mode | stat.S_IEXEC)
+        files_created.append(str(dev_script_path))
     
     return files_created
 
@@ -2119,9 +2194,7 @@ def generate_docker_compose_main(config: ProjectConfiguration) -> str:
     networks:
       - app-network""")
     
-    return f"""version: '3.8'
-
-services:
+    return f"""services:
 {chr(10).join(services)}
 
 networks:
@@ -2146,18 +2219,16 @@ def generate_docker_compose_dev(config: ProjectConfiguration) -> str:
     if config.frontend:
         services.append(f"""  frontend:
     build:
-      context: ./frontend
-      dockerfile: ../infra/docker/frontend/Dockerfile
-      target: builder
+      context: ./infra/docker/frontend
+      dockerfile: Dockerfile.dev
     ports:
-      - "3000:3000"
+      - "3001:3001"
     volumes:
       - ./frontend:/app
       - /app/node_modules
     environment:
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
-    command: {config.package_manager or 'npm'} run dev
     depends_on:
       - backend
     networks:
@@ -2192,7 +2263,6 @@ def generate_docker_compose_dev(config: ProjectConfiguration) -> str:
       - "{db_port}:{db_port}"
     volumes:
       - db_data:/var/lib/{"postgresql/data" if config.database == 'postgresql' else "mysql"}
-      - ./database/init:/docker-entrypoint-initdb.d
     environment:
       - POSTGRES_DB={config.project_name.replace('-', '_')}
       - POSTGRES_USER=postgres
@@ -2200,9 +2270,7 @@ def generate_docker_compose_dev(config: ProjectConfiguration) -> str:
     networks:
       - app-network""")
     
-    return f"""version: '3.8'
-
-services:
+    return f"""services:
 {chr(10).join(services)}
 
 networks:
@@ -2274,9 +2342,7 @@ def generate_docker_compose_staging(config: ProjectConfiguration) -> str:
       - app-network
     restart: unless-stopped""")
     
-    return f"""version: '3.8'
-
-services:
+    return f"""services:
 {chr(10).join(services)}
 
 networks:
@@ -2363,9 +2429,7 @@ def generate_docker_compose_prod(config: ProjectConfiguration) -> str:
           cpus: '1.0'
           memory: 2G""")
     
-    return f"""version: '3.8'
-
-services:
+    return f"""services:
 {chr(10).join(services)}
 
 networks:
@@ -2392,6 +2456,23 @@ def generate_readme_with_docker(config: ProjectConfiguration) -> str:
     docker_section = f"""
 
 ## Docker Commands
+
+### Quick Start (Development)
+```bash
+# Use the provided development script
+./dev.sh
+```
+
+This script will:
+- Clean up any existing containers
+- Check and free up required ports
+- Build and start all services
+- Display service URLs when ready
+
+**Service URLs:**
+- Frontend: http://localhost:3001
+- Backend: http://localhost:8000
+- Database: localhost:5432 (PostgreSQL) or localhost:3306 (MySQL)
 
 ### Development Environment
 ```bash
@@ -2678,3 +2759,192 @@ With Context7 MCP integration:
 
 For more information about Context7, visit: https://github.com/upstash/context7
 """
+
+
+def generate_tailwind_css(config: ProjectConfiguration, is_vue: bool = False) -> str:
+    """Generate CSS file with Tailwind directives.
+    
+    Args:
+        config: Project configuration
+        is_vue: Whether this is for Vue (uses style.css instead of index.css)
+        
+    Returns:
+        CSS content with Tailwind directives
+    """
+    return """@tailwind base;
+@tailwind components;
+@tailwind utilities;
+"""
+
+
+def generate_tailwind_config(config: ProjectConfiguration) -> str:
+    """Generate tailwind.config.js file.
+    
+    Args:
+        config: Project configuration
+        
+    Returns:
+        Tailwind configuration content
+    """
+    return f"""/** @type {{import('tailwindcss').Config}} */
+module.exports = {{
+  content: [
+    "./index.html",
+    "./src/**/*.{{js,ts,jsx,tsx,vue}}",
+  ],
+  theme: {{
+    extend: {{}},
+  }},
+  plugins: [],
+}}
+"""
+
+
+def generate_postcss_config(config: ProjectConfiguration) -> str:
+    """Generate postcss.config.js file.
+    
+    Args:
+        config: Project configuration
+        
+    Returns:
+        PostCSS configuration content
+    """
+    return """module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+}
+"""
+
+
+def generate_dev_script(config: ProjectConfiguration) -> str:
+    """Generate dev.sh script for Docker development environment.
+    
+    Args:
+        config: Project configuration
+        
+    Returns:
+        Shell script content
+    """
+    package_manager = config.package_manager or 'npm'
+    
+    script_content = f"""#!/bin/bash
+
+# Development environment startup script for {config.project_name}
+# Generated by create-claude-app
+
+set -e
+
+# Colors for output
+RED='\\033[0;31m'
+GREEN='\\033[0;32m'
+YELLOW='\\033[1;33m'
+NC='\\033[0m' # No Color
+
+echo -e "${{GREEN}}Starting development environment for {config.project_name}...${{NC}}"
+
+# Check if Docker is running
+if ! docker info > /dev/null 2>&1; then
+    echo -e "${{RED}}Error: Docker is not running. Please start Docker Desktop and try again.${{NC}}"
+    exit 1
+fi
+
+# Function to check and kill processes on a port
+kill_port() {{
+    local port=$1
+    local service=$2
+    if lsof -Pi :$port -sTCP:LISTEN -t >/dev/null 2>&1; then
+        echo -e "${{YELLOW}}Port $port is in use. Killing process...${{NC}}"
+        lsof -ti:$port | xargs kill -9 2>/dev/null || true
+        sleep 1
+    fi
+}}
+
+# Check and free up required ports
+echo -e "${{GREEN}}Checking port availability...${{NC}}"
+"""
+
+    if config.frontend:
+        script_content += """kill_port 3001 "Frontend"
+"""
+
+    if config.backend:
+        backend_port = "8000" if config.backend == 'python' else "3000"
+        script_content += f"""kill_port {backend_port} "Backend"
+"""
+
+    if config.database:
+        db_port = "5432" if config.database == 'postgresql' else "3306"
+        db_name = "PostgreSQL" if config.database == 'postgresql' else "MySQL"
+        script_content += f"""kill_port {db_port} "{db_name}"
+"""
+
+    script_content += f"""
+# Clean up any existing containers
+echo -e "${{GREEN}}Cleaning up existing containers...${{NC}}"
+docker-compose down --volumes --remove-orphans
+
+# Wait for ports to be released
+sleep 2
+
+# Build and start services
+echo -e "${{GREEN}}Building Docker images...${{NC}}"
+
+# Use COMPOSE_DOCKER_CLI_BUILD=0 to avoid buildx requirement
+export COMPOSE_DOCKER_CLI_BUILD=0
+
+# Build services
+docker-compose -f docker-compose.dev.yml build
+"""
+
+    if config.frontend:
+        script_content += f"""
+# Install frontend dependencies with fresh node_modules
+echo -e "${{GREEN}}Installing frontend dependencies...${{NC}}"
+docker-compose -f docker-compose.dev.yml run --rm frontend {package_manager} install
+"""
+
+    if config.backend and config.backend == 'python':
+        script_content += """
+# Install backend dependencies
+echo -e "${{GREEN}}Installing backend dependencies...${{NC}}"
+docker-compose -f docker-compose.dev.yml run --rm backend pip install -r requirements.txt
+"""
+
+    script_content += """
+# Start all services
+echo -e "${{GREEN}}Starting all services...${{NC}}"
+docker-compose -f docker-compose.dev.yml up --build -d
+
+# Wait for services to be ready
+echo -e "${{GREEN}}Waiting for services to be ready...${{NC}}"
+sleep 5
+
+# Show service status
+echo -e "${{GREEN}}Service Status:${{NC}}"
+docker-compose -f docker-compose.dev.yml ps
+
+echo -e "${{GREEN}}Development environment is ready!${{NC}}"
+"""
+
+    if config.frontend:
+        script_content += """echo -e "${{GREEN}}Frontend: http://localhost:3001${{NC}}"
+"""
+
+    if config.backend:
+        backend_port = "8000" if config.backend == 'python' else "3000"
+        script_content += f"""echo -e "${{GREEN}}Backend: http://localhost:{backend_port}${{NC}}"
+"""
+
+    if config.database:
+        db_port = "5432" if config.database == 'postgresql' else "3306"
+        script_content += f"""echo -e "${{GREEN}}Database: localhost:{db_port}${{NC}}"
+"""
+
+    script_content += """
+echo -e "${{YELLOW}}To view logs: docker-compose -f docker-compose.yml -f infra/docker/docker-compose.dev.yml logs -f${{NC}}"
+echo -e "${{YELLOW}}To stop: docker-compose -f docker-compose.yml -f infra/docker/docker-compose.dev.yml down${{NC}}"
+"""
+
+    return script_content

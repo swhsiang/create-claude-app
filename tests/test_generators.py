@@ -247,7 +247,6 @@ class TestTemplateGenerator:
         content = generate_docker_compose(config)
         
         # Check Docker Compose structure
-        assert 'version:' in content
         assert 'services:' in content
         assert 'postgres' in content
         assert 'POSTGRES_DB' in content
@@ -429,14 +428,19 @@ class TestTemplateGenerator:
             files_created = generate_frontend_entry_points(project_path, config)
             
             # Check files were created
-            assert len(files_created) >= 4  # index.html, main.tsx, App.tsx, vite.config.ts
+            assert len(files_created) >= 7  # index.html, main.tsx, App.tsx, vite.config.ts, index.css, tailwind.config.js, postcss.config.js
             
             # Check specific files exist
             frontend_path = project_path / 'frontend'
-            assert (frontend_path / 'public' / 'index.html').exists()
+            # For Vite, index.html is in frontend root
+            assert (frontend_path / 'index.html').exists()
             assert (frontend_path / 'src' / 'main.tsx').exists()
             assert (frontend_path / 'src' / 'App.tsx').exists()
             assert (frontend_path / 'vite.config.ts').exists()
+            # Also check Tailwind files were generated
+            assert (frontend_path / 'src' / 'index.css').exists()
+            assert (frontend_path / 'tailwind.config.js').exists()
+            assert (frontend_path / 'postcss.config.js').exists()
             
             # Check file contents
             app_content = (frontend_path / 'src' / 'App.tsx').read_text()
@@ -797,15 +801,16 @@ class TestDockerInfrastructureGeneration:
             files_created = generate_docker_compose_environments(project_path, config)
             
             # Check that environment-specific files were created
-            assert len(files_created) == 4  # main, dev, staging, prod
+            assert len(files_created) == 5  # main, dev, staging, prod, dev.sh
             assert any('docker-compose.yml' in f for f in files_created)
             assert any('docker-compose.dev.yml' in f for f in files_created)
             assert any('docker-compose.staging.yml' in f for f in files_created)
             assert any('docker-compose.prod.yml' in f for f in files_created)
+            assert any('dev.sh' in f for f in files_created)
             
             # Check file contents
             main_compose = (project_path / 'docker-compose.yml').read_text()
-            assert 'version: ' in main_compose
+            assert 'services:' in main_compose
             assert 'services:' in main_compose
             assert 'frontend:' in main_compose
             assert 'backend:' in main_compose
@@ -824,7 +829,7 @@ class TestDockerInfrastructureGeneration:
         content = generate_docker_compose_dev(config)
         
         # Check development-specific content
-        assert 'version: ' in content
+        assert 'services:' in content
         assert 'services:' in content
         assert 'volumes:' in content  # Dev should have volume mounts
         assert 'ports:' in content
@@ -844,7 +849,7 @@ class TestDockerInfrastructureGeneration:
         content = generate_docker_compose_prod(config)
         
         # Check production-specific content
-        assert 'version: ' in content
+        assert 'services:' in content
         assert 'services:' in content
         assert 'restart: unless-stopped' in content
         assert 'NODE_ENV=production' in content or 'ENVIRONMENT=production' in content
